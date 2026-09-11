@@ -1,7 +1,7 @@
 # Demo video script (2–3 minutes)
 
 Everything technical is done and live — this is the only remaining piece,
-and it needs a human voice. Screen-record `https://web-nine-puce-31.vercel.app`
+and it needs a human voice. Screen-record `https://bitcred.online`
 (or `npm run dev` locally against the same deployed contract) following this
 beat sheet. The resolver is already running continuously against the
 deployed contract, so a real window will open/lock/settle in front of the
@@ -80,7 +80,7 @@ having both in your back pocket while editing is strictly better.
 
 ## Assets already in place
 
-- Live app: https://web-nine-puce-31.vercel.app
+- Live app: https://bitcred.online
 - Contract: `0x219eE4A6A83E7D9238e43e568720da2b5e5eC1c2` on Shannon
   (`https://shannon-explorer.somnia.network/address/0x219eE4A6A83E7D9238e43e568720da2b5e5eC1c2`)
 - Resolver log for on-camera proof of automatic settlement:

@@ -7,7 +7,7 @@ remove DreamDEX and the product cannot resolve. That is the integration
 story.
 
 **Repo:** https://github.com/e-man07/matchup-btc-eth
-**Live app:** https://web-nine-puce-31.vercel.app
+**Live app:** https://bitcred.online
 **Live testnet contract:** [`0x219eE4A6A83E7D9238e43e568720da2b5e5eC1c2`](https://shannon-explorer.somnia.network/address/0x219eE4A6A83E7D9238e43e568720da2b5e5eC1c2) on Somnia Shannon (chain `50312`)
 
 ---
