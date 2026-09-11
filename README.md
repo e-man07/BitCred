@@ -1,4 +1,4 @@
-# Matchup — BTC vs ETH, settled by DreamDEX Event Contracts
+# Bitcred — BTC vs ETH, settled by DreamDEX Event Contracts
 
 A head-to-head prediction game built for the Somnia × DreamDEX Event Contracts
 Hackathon. Pick a cadence (5m / 15m / 1h), pick BTC or ETH, winner takes both
@@ -142,9 +142,9 @@ cp .env.example .env.local   # fill in NEXT_PUBLIC_CONTRACT_ADDRESS + FAUCET_PRI
 npm run dev
 ```
 
-Open the printed local URL. A burner wallet is generated in the browser on
-first load (no extension, no signup) — use the "Get test STT" button to fund
-it from the faucet endpoint.
+Open the printed local URL. Connect a wallet (any injected provider, e.g.
+MetaMask) on Shannon testnet — use the "Get test STT" button to fund it from
+the faucet endpoint.
 
 ---
 

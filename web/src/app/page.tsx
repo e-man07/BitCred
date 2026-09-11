@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BtcIcon, EthIcon } from "@/components/AssetIcon";
+import Image from "next/image";
 import { Hero } from "@/components/landing/Hero";
 import { StatRow } from "@/components/landing/StatCard";
 import { HowItWorks } from "@/components/landing/HowItWorks";
@@ -9,11 +9,8 @@ export default function Home() {
     <div className="flex-1 bg-arena bg-grain">
       <header className="max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <div className="flex -space-x-2">
-            <BtcIcon className="w-7 h-7 ring-2 ring-bg rounded-full" />
-            <EthIcon className="w-7 h-7 ring-2 ring-bg rounded-full" />
-          </div>
-          <span className="font-display text-xl tracking-wide">Matchup</span>
+          <Image src="/bitcred-logo.png" alt="Bitcred" width={28} height={28} priority />
+          <span className="font-display text-xl tracking-wide">Bitcred</span>
         </div>
         <nav className="flex items-center gap-6 text-sm text-text-dim">
           <a

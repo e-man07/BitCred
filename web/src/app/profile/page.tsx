@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BtcIcon, EthIcon } from "@/components/AssetIcon";
+import Image from "next/image";
 import { WalletBadge } from "@/components/play/WalletBadge";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ProfileHistory } from "@/components/profile/ProfileHistory";
@@ -30,11 +30,8 @@ export default function ProfilePage() {
     <div className="flex-1 bg-arena bg-grain">
       <header className="max-w-3xl mx-auto flex items-center justify-between px-6 py-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex -space-x-2">
-            <BtcIcon className="w-6 h-6 ring-2 ring-bg rounded-full" />
-            <EthIcon className="w-6 h-6 ring-2 ring-bg rounded-full" />
-          </div>
-          <span className="font-display text-lg tracking-wide">Matchup</span>
+          <Image src="/bitcred-logo.png" alt="Bitcred" width={24} height={24} />
+          <span className="font-display text-lg tracking-wide">Bitcred</span>
         </Link>
         <WalletBadge />
       </header>

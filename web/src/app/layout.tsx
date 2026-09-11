@@ -22,9 +22,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Matchup — BTC vs ETH",
+  title: "Bitcred — BTC vs ETH",
   description:
     "Pick a side. BTC vs ETH, one window, winner takes both pots — settled entirely by DreamDEX Event Contract resolutions on Somnia.",
+  icons: {
+    icon: "/bitcred-logo.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
