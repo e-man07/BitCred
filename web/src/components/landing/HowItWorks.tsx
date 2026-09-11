@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { SectionHeading } from "@/components/landing/Eyebrow";
 
 const STEPS = [
   {
     n: "01",
     title: "Pick a side",
-    body: "Tap BTC or ETH and stake a bit of STT. One tap, wallet confirms instantly — no popup, no gas fumbling.",
+    body: "Connect a wallet, tap BTC or ETH, and stake some STT. Confirm from your wallet — Somnia settles in well under a second.",
   },
   {
     n: "02",
@@ -27,16 +28,12 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section className="max-w-6xl mx-auto px-6 py-16 border-t border-border">
-      <motion.h2
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="font-display text-4xl sm:text-5xl mb-10"
-      >
-        How a window plays out
-      </motion.h2>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border">
+    <section className="max-w-6xl mx-auto px-6 py-20 border-t border-border">
+      <SectionHeading
+        eyebrow="Pick · Lock · Resolve · Claim"
+        title="How a window plays out"
+      />
+      <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border">
         {STEPS.map((s, i) => (
           <motion.div
             key={s.n}

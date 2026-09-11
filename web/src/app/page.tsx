@@ -1,8 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Hero } from "@/components/landing/Hero";
+import { TrustStrip } from "@/components/landing/TrustStrip";
+import { WhatIsBitcred } from "@/components/landing/WhatIsBitcred";
+import { SectionHeading } from "@/components/landing/Eyebrow";
 import { StatRow } from "@/components/landing/StatCard";
 import { HowItWorks } from "@/components/landing/HowItWorks";
+import { WhatYouGet } from "@/components/landing/WhatYouGet";
+import { ClosingCta } from "@/components/landing/ClosingCta";
 
 export default function Home() {
   return (
@@ -37,32 +42,43 @@ export default function Home() {
       </header>
 
       <Hero />
+      <TrustStrip />
+      <WhatIsBitcred />
 
-      <section className="max-w-3xl mx-auto px-6 py-16">
-        <StatRow
-          index={0}
-          value="83.5%"
-          label="of DreamDEX markets never traded"
-          detail="“Will BTC go up” is a question about market beta — everyone answers the same way, so the book goes one-sided and dies."
-          accent="draw"
+      <section className="max-w-3xl mx-auto px-6 py-20 border-t border-border">
+        <SectionHeading
+          eyebrow="The insight"
+          title="The number that shaped this build"
+          subtitle="We measured how often BTC and ETH actually resolve in the same direction against live Shannon testnet data — before writing any product code."
         />
-        <StatRow
-          index={1}
-          value="~85%"
-          label="of BTC vs ETH windows are a draw"
-          detail="We measured it against live Shannon testnet data before building this. BTC and ETH move together most of the time — so a draw is the main event, not an edge case."
-          accent="eth"
-        />
-        <StatRow
-          index={2}
-          value="100%"
-          label="of settlement comes from DreamDEX"
-          detail="No oracle of our own, no admin override. Remove DreamDEX Event Contracts and this product cannot resolve — that's the whole integration story."
-          accent="btc"
-        />
+        <div className="mt-10">
+          <StatRow
+            index={0}
+            value="83.5%"
+            label="of DreamDEX markets never traded"
+            detail="“Will BTC go up” is a question about market beta — everyone answers the same way, so the book goes one-sided and dies."
+            accent="draw"
+          />
+          <StatRow
+            index={1}
+            value="~85%"
+            label="of BTC vs ETH windows are a draw"
+            detail="BTC and ETH move together most of the time — so a draw is the main event, not an edge case. The UI treats it as a first-class outcome."
+            accent="eth"
+          />
+          <StatRow
+            index={2}
+            value="100%"
+            label="of settlement comes from DreamDEX"
+            detail="No oracle of our own, no admin override. Remove DreamDEX Event Contracts and this product cannot resolve — that's the whole integration story."
+            accent="btc"
+          />
+        </div>
       </section>
 
       <HowItWorks />
+      <WhatYouGet />
+      <ClosingCta />
 
       <footer className="max-w-6xl mx-auto px-6 py-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-text-faint border-t border-border">
         <span>Built on Somnia · Settled by DreamDEX Event Contracts</span>

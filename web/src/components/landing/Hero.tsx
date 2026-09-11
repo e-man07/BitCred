@@ -98,10 +98,10 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="mt-6 text-lg text-text-dim max-w-lg mx-auto leading-relaxed"
         >
-          One five-minute window. Whichever asset's DreamDEX Event Contract
-          resolves Up while the other doesn't, wins the whole pot. Same
-          direction on both? Everyone gets refunded — no house, no
-          ambiguity.
+          Pick a cadence — 5 minutes, 15 minutes, or an hour. Whichever asset's
+          DreamDEX Event Contract resolves Up while the other doesn't wins the
+          whole pot. Same direction on both? Everyone gets refunded — no
+          house, no ambiguity.
         </motion.p>
 
         <motion.div
@@ -117,7 +117,7 @@ export function Hero() {
             Enter the Arena
           </Link>
           <span className="text-sm text-text-faint">
-            No signup. Wallet auto-created in your browser.
+            Connect any wallet. Shannon testnet, one click.
           </span>
         </motion.div>
       </div>
