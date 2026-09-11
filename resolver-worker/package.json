@@ -1,0 +1,20 @@
+{
+  "name": "matchup-resolver-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "@somnia-chain/markets-sdk": "^0.30.0",
+    "viem": "^2.56.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260911.1",
+    "typescript": "^5.6.3",
+    "wrangler": "^4.131.1"
+  }
+}

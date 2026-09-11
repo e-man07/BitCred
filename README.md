@@ -106,9 +106,10 @@ pleasant on a chain with sub-second finality.
 | Path | What it is |
 |---|---|
 | `contracts/` | `MatchupMarket.sol`, Foundry tests (24 passing, every edge case in the spec), deploy script |
-| `resolver/` | Standalone TS keeper — opens/settles windows against live DreamDEX data |
+| `resolver/` | Standalone TS keeper (opens/settles windows) for local dev — ticks every 5s |
+| `resolver-worker/` | The same keeper as a Cloudflare Worker, cron-triggered every minute — this is what actually runs production |
 | `web/` | Next.js 16 frontend — landing page + the live race/pick/claim UI |
-| `shared/` | The contract ABI, shared by `resolver/` and `web/` |
+| `shared/` | The contract ABI, shared by `resolver/` and `web/` (`resolver-worker/` keeps its own bundled copy, since Workers needs it in the module graph rather than read off disk) |
 | `FEEDBACK.md` | SDK & documentation friction log from building this, for the DreamDEX team |
 
 ---
@@ -132,6 +133,12 @@ npm install
 cp .env.example .env   # fill in SOMNIA_PRIVATE_KEY + CONTRACT_ADDRESS
 npm start               # runs forever: opens windows, polls DreamDEX, settles
 ```
+
+This is for local dev only — it's a plain Node process, so it stops the moment
+your terminal/session does. **Production runs `resolver-worker/` instead**: the
+same logic as a Cloudflare Worker, invoked by a Cron Trigger every minute
+(free plan, 1-minute cron granularity — Vercel's free tier only allows daily
+cron, which doesn't work at this cadence). See `resolver-worker/README.md`.
 
 ### 3. Frontend
 
