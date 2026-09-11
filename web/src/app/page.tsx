@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Hero } from "@/components/landing/Hero";
 import { TrustStrip } from "@/components/landing/TrustStrip";
+import { Problem } from "@/components/landing/Problem";
 import { WhatIsBitcred } from "@/components/landing/WhatIsBitcred";
 import { SectionHeading } from "@/components/landing/Eyebrow";
 import { StatRow } from "@/components/landing/StatCard";
@@ -43,31 +44,25 @@ export default function Home() {
 
       <Hero />
       <TrustStrip />
+      <Problem />
       <WhatIsBitcred />
 
       <section className="max-w-3xl mx-auto px-6 py-20 border-t border-border">
         <SectionHeading
           eyebrow="The insight"
-          title="The number that shaped this build"
-          subtitle="We measured how often BTC and ETH actually resolve in the same direction against live Shannon testnet data — before writing any product code."
+          title="What we measured before building"
+          subtitle="We checked how often BTC and ETH actually resolve in the same direction against live Shannon testnet data, then built the settlement path around it."
         />
         <div className="mt-10">
           <StatRow
             index={0}
-            value="83.5%"
-            label="of DreamDEX markets never traded"
-            detail="“Will BTC go up” is a question about market beta — everyone answers the same way, so the book goes one-sided and dies."
-            accent="draw"
-          />
-          <StatRow
-            index={1}
             value="~85%"
             label="of BTC vs ETH windows are a draw"
             detail="BTC and ETH move together most of the time — so a draw is the main event, not an edge case. The UI treats it as a first-class outcome."
             accent="eth"
           />
           <StatRow
-            index={2}
+            index={1}
             value="100%"
             label="of settlement comes from DreamDEX"
             detail="No oracle of our own, no admin override. Remove DreamDEX Event Contracts and this product cannot resolve — that's the whole integration story."

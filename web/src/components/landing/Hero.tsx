@@ -30,7 +30,7 @@ export function Hero() {
           className="inline-flex items-center gap-2 border border-border px-3 py-1 text-xs text-text-dim mb-10"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-win pulse-ring" />
-          Live on Somnia Shannon Testnet
+          Live on Somnia · Settled by DreamDEX Event Contracts
         </motion.div>
 
         {/* the face-off */}
