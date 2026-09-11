@@ -12,15 +12,8 @@ import {
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      {/* the seam: BTC's corner bleeding in from the top-left, ETH's from
-          the bottom-right, meeting at a hard diagonal line through center */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(122deg, rgba(247,147,26,0.07) 0%, rgba(247,147,26,0.015) 30%, transparent 46%, transparent 54%, rgba(124,140,255,0.015) 70%, rgba(124,140,255,0.07) 100%)",
-        }}
-      />
+      {/* A single neutral overhead spotlight — BTC/ETH color lives in the
+          icons, the type, and the clash beam, not an ambient background wash. */}
       <div
         className="absolute inset-0 opacity-60"
         style={{
