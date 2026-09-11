@@ -7,6 +7,7 @@ import { WalletBadge } from "@/components/play/WalletBadge";
 import { MatchHeader, Phase } from "@/components/play/MatchHeader";
 import { CadenceTabs } from "@/components/play/CadenceTabs";
 import { RaceView } from "@/components/play/RaceView";
+import { MatchChart } from "@/components/play/MatchChart";
 import { PotSplitBar } from "@/components/play/PotSplitBar";
 import { PickPanel } from "@/components/play/PickPanel";
 import { SettlementOverlay } from "@/components/play/SettlementOverlay";
@@ -39,7 +40,7 @@ export default function PlayPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const prices = usePrices(win?.btcMarketId ?? null, win?.ethMarketId ?? null);
+  const prices = usePrices(win?.btcMarketId ?? null, win?.ethMarketId ?? null, win?.opensAt ?? null);
 
   const [userStake, setUserStake] = useState<{ btc: bigint; eth: bigint }>({ btc: 0n, eth: 0n });
   const [refreshTick, setRefreshTick] = useState(0);
@@ -125,6 +126,14 @@ export default function PlayPage() {
 
         <div className="mt-6">
           <RaceView btc={prices.btc} eth={prices.eth} />
+        </div>
+
+        <div className="mt-6">
+          <MatchChart
+            btcHistory={prices.btcHistory}
+            ethHistory={prices.ethHistory}
+            cadenceSec={cadenceSec}
+          />
         </div>
 
         <div className="mt-6">
