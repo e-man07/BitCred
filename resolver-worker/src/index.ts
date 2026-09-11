@@ -224,14 +224,42 @@ export default {
     log("resolver tick done");
   },
 
-  // A GET on the worker's own URL runs one tick on demand — handy for
-  // manually verifying a deploy without waiting for the next cron minute.
+  // A GET on the worker's own URL runs one tick on demand and reports what
+  // happened at each step — handy for manually verifying a deploy without
+  // waiting for the next cron minute, and for debugging without relying on
+  // `wrangler tail` log capture.
   async fetch(_req: Request, env: Env, ctx: ExecutionContext) {
-    const cadences = env.CADENCES_SEC.split(",").map((s) => Number(s.trim())).filter((n) => n > 0);
-    const resolver = new Resolver(env);
-    for (const cadenceSec of cadences) {
-      await resolver.tick(cadenceSec);
+    const steps: Record<string, string> = {};
+    const t0 = Date.now();
+    try {
+      steps.construct = "starting";
+      const resolver = new Resolver(env);
+      steps.construct = "ok";
+
+      const cadences = env.CADENCES_SEC.split(",").map((s) => Number(s.trim())).filter((n) => n > 0);
+      for (const cadenceSec of cadences) {
+        const key = `cadence_${cadenceSec}`;
+        try {
+          steps[key] = "maybeOpenNextWindow starting";
+          await resolver.maybeOpenNextWindow(cadenceSec);
+          steps[key] = "maybeOpenNextWindow ok";
+        } catch (err) {
+          steps[key] = `maybeOpenNextWindow ERROR: ${(err as Error).name}: ${(err as Error).message}\n${(err as Error).stack}`;
+        }
+        try {
+          steps[key] += "; trySettlePendingWindows starting";
+          await resolver.trySettlePendingWindows(cadenceSec);
+          steps[key] += "; trySettlePendingWindows ok";
+        } catch (err) {
+          steps[key] += `; trySettlePendingWindows ERROR: ${(err as Error).name}: ${(err as Error).message}\n${(err as Error).stack}`;
+        }
+      }
+    } catch (err) {
+      steps.fatal = `${(err as Error).name}: ${(err as Error).message}\n${(err as Error).stack}`;
     }
-    return new Response("tick complete\n");
+    steps.totalMs = String(Date.now() - t0);
+    return new Response(JSON.stringify(steps, null, 2), {
+      headers: { "content-type": "application/json" },
+    });
   },
 };
