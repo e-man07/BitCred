@@ -25,6 +25,12 @@ export default function Home() {
             Shannon Testnet
           </a>
           <Link
+            href="/profile"
+            className="hover:text-text transition-colors hidden sm:inline"
+          >
+            Profile
+          </Link>
+          <Link
             href="/play"
             className="rounded-full bg-text text-bg font-medium px-4 py-2 text-sm hover:opacity-90 transition-opacity"
           >

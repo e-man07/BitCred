@@ -22,7 +22,11 @@ export const shannon = defineChain({
 
 export const publicClient = createPublicClient({
   chain: shannon,
-  transport: http(RPC_URL),
+  // Shannon has no Multicall3 deployed, but its RPC supports native JSON-RPC
+  // batching — this collapses many concurrent eth_call reads (e.g. the
+  // profile page probing dozens of past windows) into a handful of HTTP
+  // round-trips instead of one each.
+  transport: http(RPC_URL, { batch: true }),
 });
 
 export const MATCHUP_ABI = abi;

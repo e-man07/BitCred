@@ -96,7 +96,15 @@ export default function PlayPage() {
           </div>
           <span className="font-semibold tracking-tight">Matchup</span>
         </Link>
-        <WalletBadge />
+        <div className="flex items-center gap-4">
+          <Link
+            href="/profile"
+            className="text-sm text-text-dim hover:text-text transition-colors hidden sm:inline"
+          >
+            Profile
+          </Link>
+          <WalletBadge />
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-20">
