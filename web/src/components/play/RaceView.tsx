@@ -60,7 +60,10 @@ export function RaceView({ btc, eth }: { btc: AssetPrice; eth: AssetPrice }) {
   const delta = b - e; // >0 => BTC ahead
   const SCALE = 0.4; // % delta that maps to a full-width lead
   const lead = Math.max(-1, Math.min(1, delta / SCALE));
-  const pullPct = 50 + lead * 42; // meter's marker position, 8–92%
+  // BTC ahead (lead > 0) pulls the marker toward the BTC-ahead (left) side,
+  // i.e. toward 0%; ETH ahead pulls it toward 100%. Was `50 + lead * 42`,
+  // which moved the marker toward whichever side was actually LOSING.
+  const pullPct = 50 - lead * 42; // meter's marker position, 8–92%
 
   return (
     <div className="corner-panel seam relative overflow-hidden">
