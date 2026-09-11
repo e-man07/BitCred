@@ -141,7 +141,11 @@ export default function PlayPage() {
         </div>
 
         <div className="mt-6">
-          {win ? (
+          {!address ? (
+            <div className="corner-panel p-8 text-center text-text-faint">
+              Connect a wallet to place a pick.
+            </div>
+          ) : win ? (
             <PickPanel
               windowId={win.id}
               locked={phase !== "open"}

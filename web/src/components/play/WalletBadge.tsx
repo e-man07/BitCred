@@ -5,15 +5,29 @@ import { useWallet, formatSTT } from "@/lib/wallet";
 import { shortAddr } from "@/lib/format";
 
 export function WalletBadge() {
-  const { address, balance, ready, requestFaucet, faucetPending } = useWallet();
+  const { address, balance, ready, connecting, connect, disconnect, requestFaucet, faucetPending } =
+    useWallet();
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!ready || !address) {
     return (
-      <div className="rounded-full border border-border bg-surface/60 px-4 py-2 text-sm text-text-faint">
-        connecting…
-      </div>
+      <button
+        onClick={async () => {
+          setError(null);
+          try {
+            await connect();
+          } catch (e) {
+            setError((e as Error).message);
+          }
+        }}
+        disabled={connecting}
+        className="rounded-full border border-border bg-surface/60 px-4 py-2 text-sm font-medium text-text hover:border-text-faint transition-colors disabled:opacity-50 flex items-center gap-2"
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-eth" />
+        {connecting ? "connecting…" : "Connect wallet"}
+        {error && <span className="text-lose text-xs max-w-40">{error}</span>}
+      </button>
     );
   }
 
@@ -33,6 +47,15 @@ export function WalletBadge() {
     }
   }
 
+  async function disconnectWallet() {
+    setError(null);
+    try {
+      await disconnect();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
   const low = balance < 10n ** 16n; // < 0.01 STT
 
   return (
@@ -42,7 +65,7 @@ export function WalletBadge() {
         className="rounded-full border border-border bg-surface/60 px-4 py-2 text-sm flex items-center gap-2 hover:border-text-faint transition-colors"
         title={address}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-win" />
+        <span className="w-1.5 h-1.5 rounded-full bg-eth" />
         <span className="tabular">{shortAddr(address)}</span>
         <span className="text-text-dim tabular">{formatSTT(balance, 3)} STT</span>
         {copied && <span className="text-win text-xs">copied</span>}
@@ -57,6 +80,12 @@ export function WalletBadge() {
         }}
       >
         {faucetPending ? "sending…" : "Get test STT"}
+      </button>
+      <button
+        onClick={disconnectWallet}
+        className="hidden sm:inline rounded-full px-3 py-2 text-sm font-medium border border-border text-text-dim hover:border-text-faint transition-colors"
+      >
+        Disconnect
       </button>
       {error && <span className="text-lose text-xs max-w-40">{error}</span>}
     </div>

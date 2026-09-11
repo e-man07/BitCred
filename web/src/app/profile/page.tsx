@@ -50,12 +50,20 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        <ProfileStats stats={stats} />
+        {!address ? (
+          <div className="corner-panel p-8 text-center text-text-faint">
+            Connect a wallet to see your record.
+          </div>
+        ) : (
+          <>
+            <ProfileStats stats={stats} />
 
-        <div className="mt-8">
-          <h2 className="text-sm text-text-dim mb-3">History</h2>
-          <ProfileHistory entries={entries} loading={loading} onClaimed={refresh} />
-        </div>
+            <div className="mt-8">
+              <h2 className="text-sm text-text-dim mb-3">History</h2>
+              <ProfileHistory entries={entries} loading={loading} onClaimed={refresh} />
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
