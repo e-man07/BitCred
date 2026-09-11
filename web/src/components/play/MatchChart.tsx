@@ -59,7 +59,7 @@ export function MatchChart({
   return (
     <div className="corner-panel px-5 py-4">
       <div className="flex items-center justify-between mb-2 text-sm">
-        <span className="text-text-dim">Live move since opening price</span>
+        <span className="text-text-dim">Mark price move since opening</span>
         <div className="flex items-center gap-4 font-mono tabular text-xs">
           <span className="flex items-center gap-1.5 text-btc">
             <span className="w-2 h-2 rounded-full bg-btc" /> BTC

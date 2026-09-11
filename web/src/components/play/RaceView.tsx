@@ -36,16 +36,22 @@ function Corner({
         </div>
       </div>
       <div className="mt-3 font-mono tabular text-2xl sm:text-3xl font-medium">
-        ${formatUsd(price.live)}
+        ${formatUsd(price.mark)}
       </div>
-      <span
-        className={clsx(
-          "mt-1 font-mono tabular text-sm font-semibold",
-          price.pctChange === null ? "text-text-faint" : up ? "text-win" : "text-lose"
-        )}
-      >
-        {formatPct(price.pctChange)}
-      </span>
+      <div className={clsx("flex items-center gap-2 mt-0.5", align === "right" && "flex-row-reverse")}>
+        <span
+          className={clsx(
+            "font-mono tabular text-sm font-semibold",
+            price.pctChange === null ? "text-text-faint" : up ? "text-win" : "text-lose"
+          )}
+        >
+          {formatPct(price.pctChange)}
+        </span>
+        <span className="text-[10px] text-text-faint">mark</span>
+      </div>
+      <div className="text-xs text-text-faint font-mono tabular mt-2">
+        spot ${formatUsd(price.live)}
+      </div>
     </div>
   );
 }

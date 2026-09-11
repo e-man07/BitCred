@@ -6,26 +6,34 @@ import { getDreamDexExchange } from "@/lib/dreamdex";
 type PriceWatchHandle = { stop?: () => void } | undefined;
 
 export type AssetPrice = {
-  live: number | null;
+  live: number | null; // raw spot tick
+  mark: number | null; // EMA-smoothed mark — what DreamDEX's own feed calls "mark"
   opening: number | null;
-  pctChange: number | null; // (live - opening) / opening * 100
+  pctChange: number | null; // (mark - opening) / opening * 100 — tracks what the resolution actually compares
 };
 
 export type PricePoint = { t: number; pct: number };
 
-const EMPTY: AssetPrice = { live: null, opening: null, pctChange: null };
+const EMPTY: AssetPrice = { live: null, mark: null, opening: null, pctChange: null };
 const MAX_POINTS = 900; // caps memory/render cost even on the 1h cadence
 
-function pct(live: number | null, opening: number | null): number | null {
-  if (live === null || opening === null || opening === 0) return null;
-  return ((live - opening) / opening) * 100;
+function pct(value: number | null, opening: number | null): number | null {
+  if (value === null || opening === null || opening === 0) return null;
+  return ((value - opening) / opening) * 100;
 }
 
 /**
- * Live BTC/ETH index prices, the opening price of the two DreamDEX markets
- * bound to the active window, and a running history of % -change ticks
- * since the window opened (for charting the live race, not just a single
- * number) — reset whenever the window (marketId pair) changes.
+ * Live BTC/ETH index prices — both the raw spot tick and DreamDEX's own
+ * EMA-smoothed "mark" — the opening price of the two DreamDEX markets bound
+ * to the active window, and a running history of % -change ticks since the
+ * window opened (for charting the live race, not just a single number) —
+ * reset whenever the window (marketId pair) changes.
+ *
+ * pctChange (and the chart) track the MARK price, not raw spot: DreamDEX's
+ * feed itself is described as coming from "the on-chain EMA oracle", so the
+ * mark is the value most likely to line up with what actually settles the
+ * window — raw spot ticks are noisier and can diverge from it moment to
+ * moment.
  */
 export function usePrices(
   btcMarketId: string | null,
@@ -105,16 +113,18 @@ export function usePrices(
 
       if (b) {
         const live = Number(b.price);
-        setBtc((s) => ({ ...s, live }));
-        const p = pct(live, openingRef.current.btc);
+        const mark = Number(b.ema);
+        setBtc((s) => ({ ...s, live, mark }));
+        const p = pct(mark, openingRef.current.btc);
         if (p !== null) {
           setBtcHistory((h) => (h.length >= MAX_POINTS ? h : [...h, { t, pct: p }]));
         }
       }
       if (e) {
         const live = Number(e.price);
-        setEth((s) => ({ ...s, live }));
-        const p = pct(live, openingRef.current.eth);
+        const mark = Number(e.ema);
+        setEth((s) => ({ ...s, live, mark }));
+        const p = pct(mark, openingRef.current.eth);
         if (p !== null) {
           setEthHistory((h) => (h.length >= MAX_POINTS ? h : [...h, { t, pct: p }]));
         }
@@ -130,8 +140,8 @@ export function usePrices(
   }, []);
 
   return {
-    btc: { ...btc, pctChange: pct(btc.live, btc.opening) },
-    eth: { ...eth, pctChange: pct(eth.live, eth.opening) },
+    btc: { ...btc, pctChange: pct(btc.mark, btc.opening) },
+    eth: { ...eth, pctChange: pct(eth.mark, eth.opening) },
     btcHistory,
     ethHistory,
   };
