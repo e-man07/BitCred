@@ -95,6 +95,15 @@ export function Hero() {
           pot. Tie, get an instant refund. No house, no catch.
         </motion.p>
 
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-3 text-sm text-text-faint"
+        >
+          DreamDEX's own BTC and ETH markets are the oracle — we don't run one.
+        </motion.p>
+
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}

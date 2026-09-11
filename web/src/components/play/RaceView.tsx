@@ -110,6 +110,13 @@ export function RaceView({ btc, eth }: { btc: AssetPrice; eth: AssetPrice }) {
           <span>ETH ahead</span>
         </div>
       </div>
+
+      <div className="border-t border-border px-5 sm:px-7 py-2.5 text-center">
+        <span className="text-[11px] text-text-faint font-mono tabular">
+          Price and Up/Down outcome both come from DreamDEX's BTC and ETH Event Contracts —
+          the oracle for this window
+        </span>
+      </div>
     </div>
   );
 }
