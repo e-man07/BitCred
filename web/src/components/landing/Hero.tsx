@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { BtcIcon, EthIcon } from "@/components/AssetIcon";
+import { LightningClash } from "@/components/landing/LightningClash";
 
 export function Hero() {
   return (
@@ -42,17 +43,19 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.05 }}
           className="relative flex items-center justify-center gap-6 sm:gap-12 mb-8"
         >
+          <LightningClash />
+
           <motion.div
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-            className="relative shrink-0"
+            className="relative z-10 shrink-0"
           >
             <div className="absolute inset-0 rounded-full bg-btc blur-3xl opacity-30 scale-125" />
             <BtcIcon className="relative w-24 h-24 sm:w-32 sm:h-32" />
           </motion.div>
 
           <span
-            className="font-display text-3xl sm:text-5xl text-text select-none shrink-0"
+            className="relative z-10 font-display text-3xl sm:text-5xl text-text select-none shrink-0"
             style={{ textShadow: "0 0 30px rgba(243,236,221,0.25)" }}
           >
             VS
@@ -61,7 +64,7 @@ export function Hero() {
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-            className="relative shrink-0"
+            className="relative z-10 shrink-0"
           >
             <div className="absolute inset-0 rounded-full bg-eth blur-3xl opacity-30 scale-125" />
             <EthIcon className="relative w-24 h-24 sm:w-32 sm:h-32" />
