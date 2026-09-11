@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0b0806;
-  --bg-elevated: #14100b;
-  --surface: #181310;
-  --surface-2: #1f1812;
-  --border: #332821;
-  --border-strong: #4a382c;
-  --text: #f3ecdd;
-  --text-dim: #a89e8c;
-  --text-faint: #6b6255;
+  --bg: #0a0a0b;
+  --bg-elevated: #121214;
+  --surface: #17171a;
+  --surface-2: #1e1e22;
+  --border: #2a2a2f;
+  --border-strong: #3c3c43;
+  --text: #f4f4f2;
+  --text-dim: #9a9a9f;
+  --text-faint: #636368;
 
   --btc: #f7931a;
   --btc-glow: #ffb84d;
@@ -63,15 +63,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Arena atmosphere: a single overhead spotlight, corner color bleed (BTC
-   upper-left, ETH lower-right), and a faint grain — a ring under broadcast
-   lights, not a product-dashboard grid. */
+/* Arena atmosphere: a single overhead spotlight on a flat near-black floor,
+   with only a faint trace of BTC/ETH corner color — a ring under broadcast
+   lights, not a warm-lit room. */
 .bg-arena {
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255, 235, 200, 0.07), transparent 60%),
-    radial-gradient(circle at 8% 8%, rgba(247, 147, 26, 0.16), transparent 38%),
-    radial-gradient(circle at 92% 92%, rgba(124, 140, 255, 0.16), transparent 38%);
+    radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255, 255, 255, 0.05), transparent 60%),
+    radial-gradient(circle at 8% 8%, rgba(247, 147, 26, 0.05), transparent 38%),
+    radial-gradient(circle at 92% 92%, rgba(124, 140, 255, 0.05), transparent 38%);
 }
 
 .bg-grain {
@@ -127,7 +127,7 @@ body {
 
 ::selection {
   background: var(--eth);
-  color: #0b0806;
+  color: var(--bg);
 }
 
 @keyframes pulse-ring {

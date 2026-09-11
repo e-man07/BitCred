@@ -18,14 +18,14 @@ export function Hero() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(122deg, rgba(247,147,26,0.16) 0%, rgba(247,147,26,0.04) 30%, transparent 46%, transparent 54%, rgba(124,140,255,0.04) 70%, rgba(124,140,255,0.16) 100%)",
+            "linear-gradient(122deg, rgba(247,147,26,0.07) 0%, rgba(247,147,26,0.015) 30%, transparent 46%, transparent 54%, rgba(124,140,255,0.015) 70%, rgba(124,140,255,0.07) 100%)",
         }}
       />
       <div
         className="absolute inset-0 opacity-60"
         style={{
           background:
-            "radial-gradient(ellipse 700px 420px at 50% 8%, rgba(243,236,221,0.06), transparent 65%)",
+            "radial-gradient(ellipse 700px 420px at 50% 8%, rgba(255,255,255,0.06), transparent 65%)",
         }}
       />
 
@@ -60,7 +60,7 @@ export function Hero() {
 
           <motion.span
             className="relative z-10 font-display text-3xl sm:text-5xl text-text select-none shrink-0"
-            style={{ textShadow: "0 0 30px rgba(243,236,221,0.25)" }}
+            style={{ textShadow: "0 0 30px rgba(255,255,255,0.25)" }}
             animate={{ scale: [1, 1.28, 0.96, 1] }}
             transition={{
               duration: CLASH_CYCLE_SECONDS,
