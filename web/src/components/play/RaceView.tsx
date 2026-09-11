@@ -82,22 +82,26 @@ export function RaceView({ btc, eth }: { btc: AssetPrice; eth: AssetPrice }) {
         </span>
       </div>
 
-      {/* the power meter — a tug-of-war rope, pulled toward whoever's ahead */}
+      {/* the power meter — a full tug-of-war gauge, split at whoever's ahead,
+          not a sliver of fill between the center and a marker (which reads
+          as "mostly empty" whenever the lead is small, which is most of the
+          time) */}
       <div className="relative border-t border-border px-5 sm:px-7 py-4">
-        <div className="relative h-2 bg-bg-elevated">
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-4 bg-border-strong" />
+        <div className="relative h-2 overflow-hidden">
           <motion.div
-            className="absolute top-1/2 -translate-y-1/2 h-2"
-            style={{
-              background: lead >= 0 ? "var(--btc)" : "var(--eth)",
-              left: lead >= 0 ? "50%" : `${pullPct}%`,
-              right: lead >= 0 ? `${100 - pullPct}%` : "50%",
-            }}
+            className="absolute inset-y-0 left-0 bg-btc"
+            animate={{ width: `${pullPct}%` }}
             transition={{ type: "spring", stiffness: 120, damping: 20 }}
           />
           <motion.div
-            className="absolute top-1/2 w-3 h-3 rounded-full -translate-y-1/2 -translate-x-1/2"
-            style={{ background: lead >= 0 ? "var(--btc)" : "var(--eth)", left: `${pullPct}%` }}
+            className="absolute inset-y-0 right-0 bg-eth"
+            animate={{ width: `${100 - pullPct}%` }}
+            transition={{ type: "spring", stiffness: 120, damping: 20 }}
+          />
+          <div className="absolute left-1/2 inset-y-0 w-px bg-bg/50" />
+          <motion.div
+            className="absolute top-1/2 w-3.5 h-3.5 rounded-full -translate-y-1/2 -translate-x-1/2 bg-text shadow-[0_0_0_3px_var(--bg)]"
+            animate={{ left: `${pullPct}%` }}
             transition={{ type: "spring", stiffness: 120, damping: 20 }}
           />
         </div>
