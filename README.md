@@ -6,6 +6,7 @@ Settlement comes **entirely** from DreamDEX Event Contract resolutions —
 remove DreamDEX and the product cannot resolve. That is the integration
 story.
 
+**Repo:** https://github.com/e-man07/matchup-btc-eth
 **Live app:** https://web-nine-puce-31.vercel.app
 **Live testnet contract:** [`0x94bf73f7C4f30A6e3E4456C3500D20d6b791eB84`](https://shannon-explorer.somnia.network/address/0x94bf73f7C4f30A6e3E4456C3500D20d6b791eB84) on Somnia Shannon (chain `50312`)
 
