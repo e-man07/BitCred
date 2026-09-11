@@ -10,7 +10,7 @@ import type { ProfileEntry } from "@/hooks/useProfile";
 const OUTCOME_LABEL: Record<ProfileEntry["outcome"], string> = {
   win: "Won",
   loss: "Lost",
-  draw: "No Contest",
+  draw: "Draw",
   pending: "In progress",
 };
 
@@ -48,7 +48,7 @@ function Row({ entry, onClaimed }: { entry: ProfileEntry; onClaimed: () => void 
   }
 
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-border bg-surface/50 p-4">
+    <div className="flex items-center gap-4 border border-border bg-surface p-4">
       {entry.side === Side.BTC ? <BtcIcon className="w-8 h-8 shrink-0" /> : <EthIcon className="w-8 h-8 shrink-0" />}
 
       <div className="min-w-0 flex-1">
@@ -65,8 +65,8 @@ function Row({ entry, onClaimed }: { entry: ProfileEntry; onClaimed: () => void 
       </div>
 
       <span
-        className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
-        style={{ color: OUTCOME_COLOR[entry.outcome], background: `${OUTCOME_COLOR[entry.outcome]}1a` }}
+        className="text-xs font-semibold px-2.5 py-1 shrink-0 border"
+        style={{ color: OUTCOME_COLOR[entry.outcome], borderColor: OUTCOME_COLOR[entry.outcome] }}
       >
         {OUTCOME_LABEL[entry.outcome]}
       </span>
@@ -75,7 +75,7 @@ function Row({ entry, onClaimed }: { entry: ProfileEntry; onClaimed: () => void 
         <button
           onClick={handleClaim}
           disabled={claiming}
-          className="shrink-0 rounded-full bg-text text-bg text-xs font-semibold px-3 py-2 disabled:opacity-50"
+          className="shrink-0 bg-text text-bg text-xs font-semibold px-3 py-2 disabled:opacity-50"
         >
           {claiming ? "claiming…" : `Claim ${formatSTT(entry.claimable, 3)}`}
         </button>
@@ -101,7 +101,7 @@ export function ProfileHistory({
 }) {
   if (loading && entries.length === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-surface/40 p-8 text-center text-text-faint shimmer">
+      <div className="border border-border p-8 text-center text-text-faint shimmer">
         Scanning your on-chain history…
       </div>
     );
@@ -109,7 +109,7 @@ export function ProfileHistory({
 
   if (entries.length === 0) {
     return (
-      <div className="rounded-2xl border border-border bg-surface/40 p-8 text-center text-text-faint">
+      <div className="border border-border p-8 text-center text-text-faint">
         No picks yet — head to the arena and pick a side.
       </div>
     );

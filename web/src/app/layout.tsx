@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Anton, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { WalletProvider } from "@/lib/wallet";
 import "./globals.css";
+
+const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: "400",
+});
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -25,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full`}
+      className={`${anton.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col bg-bg text-text">
         <WalletProvider>{children}</WalletProvider>

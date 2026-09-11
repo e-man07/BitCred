@@ -5,12 +5,9 @@ import type { ProfileStats as Stats } from "@/hooks/useProfile";
 
 function Tile({ label, value, accent }: { label: string; value: string; accent?: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface/60 p-4">
-      <div className="text-xs text-text-faint uppercase tracking-wide">{label}</div>
-      <div
-        className="mt-1 font-display font-semibold text-2xl tabular"
-        style={accent ? { color: accent } : undefined}
-      >
+    <div className="bg-bg px-4 py-3">
+      <div className="text-xs text-text-faint">{label}</div>
+      <div className="mt-1 font-display text-2xl tabular" style={accent ? { color: accent } : undefined}>
         {value}
       </div>
     </div>
@@ -27,7 +24,7 @@ export function ProfileStats({ stats }: { stats: Stats }) {
   const netLabel = `${net >= 0n ? "+" : ""}${formatSTT(net, 4)} STT`;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-border border border-border">
       <Tile label="Windows played" value={String(stats.windowsPlayed)} />
       <Tile label="Record (W-L-D)" value={`${stats.wins}-${stats.losses}-${stats.draws}`} />
       <Tile label="Win rate" value={winRate} />

@@ -5,45 +5,40 @@ import clsx from "clsx";
 
 type Accent = "btc" | "eth" | "draw";
 
-export function StatCard({
+const ACCENT_CLASS: Record<Accent, string> = {
+  btc: "text-btc",
+  eth: "text-eth",
+  draw: "text-win",
+};
+
+export function StatRow({
   value,
   label,
   detail,
   accent,
+  index,
 }: {
   value: string;
   label: string;
   detail: string;
   accent: Accent;
+  index: number;
 }) {
-  const accentClass = {
-    btc: "text-btc",
-    eth: "text-eth",
-    draw: "text-draw",
-  }[accent];
-
-  const glowClass = {
-    btc: "group-hover:shadow-[0_0_40px_-8px_rgba(247,147,26,0.35)]",
-    eth: "group-hover:shadow-[0_0_40px_-8px_rgba(123,143,255,0.35)]",
-    draw: "group-hover:shadow-[0_0_40px_-8px_rgba(242,195,77,0.35)]",
-  }[accent];
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, x: -12 }}
+      whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.5 }}
-      className={clsx(
-        "group rounded-2xl border border-border bg-surface/60 p-6 transition-shadow",
-        glowClass
-      )}
+      transition={{ duration: 0.4, delay: index * 0.08 }}
+      className="grid grid-cols-[auto_1fr] sm:grid-cols-[140px_1fr] gap-4 sm:gap-8 py-6 border-t border-border first:border-t-0"
     >
-      <div className={clsx("font-display font-semibold text-4xl tabular", accentClass)}>
+      <div className={clsx("font-display text-4xl sm:text-5xl tabular leading-none", ACCENT_CLASS[accent])}>
         {value}
       </div>
-      <div className="mt-2 font-medium text-text">{label}</div>
-      <p className="mt-3 text-sm text-text-dim leading-relaxed">{detail}</p>
+      <div>
+        <div className="font-medium text-text">{label}</div>
+        <p className="mt-1.5 text-sm text-text-dim leading-relaxed max-w-xl">{detail}</p>
+      </div>
     </motion.div>
   );
 }

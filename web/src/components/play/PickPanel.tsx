@@ -51,16 +51,14 @@ export function PickPanel({
   if (alreadyPicked) {
     const side = pickedSide === Side.BTC ? "BTC" : "ETH";
     const stake = pickedSide === Side.BTC ? userStakeBTC : userStakeETH;
+    const accent = pickedSide === Side.BTC ? "var(--btc)" : "var(--eth)";
     return (
-      <div
-        className={clsx(
-          "rounded-2xl border p-5 flex items-center gap-4",
-          pickedSide === Side.BTC ? "border-btc/40 bg-btc/5" : "border-eth/40 bg-eth/5"
-        )}
-      >
-        {pickedSide === Side.BTC ? <BtcIcon className="w-10 h-10" /> : <EthIcon className="w-10 h-10" />}
+      <div className="corner-panel corner-panel-sm flex items-center gap-4 px-5 py-5" style={{ borderColor: accent }}>
+        {pickedSide === Side.BTC ? <BtcIcon className="w-11 h-11" /> : <EthIcon className="w-11 h-11" />}
         <div>
-          <div className="font-semibold">You're in on {side}</div>
+          <div className="font-display text-xl" style={{ color: accent }}>
+            You're in the {side} corner
+          </div>
           <div className="text-sm text-text-dim font-mono tabular">
             {formatSTT(stake, 4)} STT staked
           </div>
@@ -75,45 +73,45 @@ export function PickPanel({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-surface/60 p-5">
+    <div className="corner-panel px-5 py-5">
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm text-text-dim">Stake amount (STT)</span>
         <span className="text-xs text-text-faint font-mono tabular">
           balance: {formatSTT(balance, 3)}
         </span>
       </div>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-5">
         <input
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           inputMode="decimal"
-          className="flex-1 rounded-xl bg-bg border border-border px-4 py-2.5 font-mono tabular focus:outline-none focus:border-text-faint"
+          className="flex-1 bg-bg border border-border px-4 py-2.5 font-mono tabular focus:outline-none focus:border-text-faint"
           placeholder="0.05"
         />
         {QUICK_AMOUNTS.map((a) => (
           <button
             key={a}
             onClick={() => setAmount(a)}
-            className="rounded-xl border border-border px-3 py-2.5 text-sm text-text-dim hover:border-text-faint transition-colors"
+            className="border border-border px-3 py-2.5 text-sm text-text-dim hover:border-text-faint transition-colors"
           >
             {a}
           </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-px bg-border">
         <PickButton
           side={Side.BTC}
-          icon={<BtcIcon className="w-7 h-7" />}
-          label="Pick BTC"
+          icon={<BtcIcon className="w-9 h-9" />}
+          label="BTC"
           disabled={locked || pending !== null}
           loading={pending === Side.BTC}
           onClick={() => submit(Side.BTC)}
         />
         <PickButton
           side={Side.ETH}
-          icon={<EthIcon className="w-7 h-7" />}
-          label="Pick ETH"
+          icon={<EthIcon className="w-9 h-9" />}
+          label="ETH"
           disabled={locked || pending !== null}
           loading={pending === Side.ETH}
           onClick={() => submit(Side.ETH)}
@@ -121,9 +119,9 @@ export function PickPanel({
       </div>
 
       {locked && (
-        <p className="mt-3 text-center text-sm text-draw">Picks are locked for this window.</p>
+        <p className="mt-4 text-center text-sm text-draw">Picks are locked for this window.</p>
       )}
-      {error && <p className="mt-3 text-center text-sm text-lose">{error}</p>}
+      {error && <p className="mt-4 text-center text-sm text-lose">{error}</p>}
     </div>
   );
 }
@@ -146,16 +144,18 @@ function PickButton({
   const accent = side === Side.BTC ? "btc" : "eth";
   return (
     <motion.button
-      whileHover={disabled ? {} : { scale: 1.02 }}
+      whileHover={disabled ? {} : { y: -2 }}
       whileTap={disabled ? {} : { scale: 0.97 }}
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "flex items-center justify-center gap-2.5 rounded-xl py-4 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
-        accent === "btc" ? "bg-btc/15 text-btc hover:bg-btc/25" : "bg-eth/15 text-eth hover:bg-eth/25"
+        "flex flex-col items-center justify-center gap-2 py-7 font-display text-2xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-bg",
+        accent === "btc" ? "text-btc hover:bg-btc/10" : "text-eth hover:bg-eth/10"
       )}
     >
-      {loading ? <span className="animate-pulse">confirming…</span> : (
+      {loading ? (
+        <span className="font-body text-sm font-medium animate-pulse">confirming…</span>
+      ) : (
         <>
           {icon}
           {label}
@@ -178,7 +178,7 @@ function QuickAdd({
     <button
       onClick={() => onSubmit(side)}
       disabled={pending !== null}
-      className="text-xs rounded-full border border-border px-3 py-1.5 text-text-dim hover:border-text-faint transition-colors disabled:opacity-50"
+      className="text-xs border border-border px-3 py-1.5 text-text-dim hover:border-text-faint transition-colors disabled:opacity-50"
     >
       {pending === side ? "adding…" : "+ add more"}
     </button>

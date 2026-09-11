@@ -20,28 +20,28 @@ export default function ProfilePage() {
 
   if (!mounted) {
     return (
-      <div className="flex-1 bg-noise grid-lines">
+      <div className="flex-1 bg-arena bg-grain">
         <div className="max-w-3xl mx-auto px-6 py-6 text-text-faint text-sm">Loading profile…</div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 bg-noise grid-lines">
+    <div className="flex-1 bg-arena bg-grain">
       <header className="max-w-3xl mx-auto flex items-center justify-between px-6 py-6">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex -space-x-2">
             <BtcIcon className="w-6 h-6 ring-2 ring-bg rounded-full" />
             <EthIcon className="w-6 h-6 ring-2 ring-bg rounded-full" />
           </div>
-          <span className="font-semibold tracking-tight">Matchup</span>
+          <span className="font-display text-lg tracking-wide">Matchup</span>
         </Link>
         <WalletBadge />
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-20">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="font-display font-semibold text-2xl">Your profile</h1>
+          <h1 className="font-display text-3xl">Your record</h1>
           <Link
             href="/play"
             className="text-sm text-text-dim hover:text-text transition-colors"

@@ -6,50 +6,46 @@ import { BtcIcon, EthIcon } from "@/components/AssetIcon";
 import { formatPct, formatUsd } from "@/lib/format";
 import type { AssetPrice } from "@/hooks/usePrices";
 
-function AssetCard({
+function Corner({
   name,
   icon,
   price,
   accent,
+  align,
 }: {
   name: string;
   icon: React.ReactNode;
   price: AssetPrice;
   accent: "btc" | "eth";
+  align: "left" | "right";
 }) {
   const up = (price.pctChange ?? 0) >= 0;
   const colorVar = accent === "btc" ? "var(--btc)" : "var(--eth)";
 
   return (
-    <div className="flex-1 rounded-2xl border border-border bg-surface/60 p-5 relative overflow-hidden">
-      <div
-        className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20 blur-2xl"
-        style={{ background: colorVar }}
-      />
-      <div className="relative flex items-center gap-3">
+    <div
+      className={clsx(
+        "flex-1 p-5 sm:p-7 flex flex-col",
+        align === "left" ? "items-start" : "items-end text-right"
+      )}
+    >
+      <div className={clsx("flex items-center gap-3", align === "right" && "flex-row-reverse")}>
         {icon}
-        <div>
-          <div className="font-display font-semibold">{name}</div>
-          <div className="text-text-faint text-xs">closes at/above opening?</div>
+        <div className="font-display text-2xl" style={{ color: colorVar }}>
+          {name}
         </div>
       </div>
-      <div className="relative mt-4 flex items-end justify-between">
-        <span className="font-mono tabular text-2xl font-medium">
-          ${formatUsd(price.live)}
-        </span>
-        <span
-          className={clsx(
-            "font-mono tabular text-sm font-semibold px-2 py-1 rounded-md",
-            price.pctChange === null
-              ? "text-text-faint"
-              : up
-                ? "text-win bg-win/10"
-                : "text-lose bg-lose/10"
-          )}
-        >
-          {formatPct(price.pctChange)}
-        </span>
+      <div className="mt-3 font-mono tabular text-2xl sm:text-3xl font-medium">
+        ${formatUsd(price.live)}
       </div>
+      <span
+        className={clsx(
+          "mt-1 font-mono tabular text-sm font-semibold",
+          price.pctChange === null ? "text-text-faint" : up ? "text-win" : "text-lose"
+        )}
+      >
+        {formatPct(price.pctChange)}
+      </span>
     </div>
   );
 }
@@ -60,34 +56,47 @@ export function RaceView({ btc, eth }: { btc: AssetPrice; eth: AssetPrice }) {
   const delta = b - e; // >0 => BTC ahead
   const SCALE = 0.4; // % delta that maps to a full-width lead
   const lead = Math.max(-1, Math.min(1, delta / SCALE));
+  const pullPct = 50 + lead * 42; // meter's marker position, 8–92%
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row gap-4">
-        <AssetCard name="BTC" icon={<BtcIcon className="w-9 h-9" />} price={btc} accent="btc" />
-        <AssetCard name="ETH" icon={<EthIcon className="w-9 h-9" />} price={eth} accent="eth" />
+    <div className="corner-panel seam relative overflow-hidden">
+      <div className="relative flex items-stretch">
+        <Corner name="BTC" icon={<BtcIcon className="w-8 h-8 sm:w-9 sm:h-9" />} price={btc} accent="btc" align="left" />
+
+        <div className="w-px bg-border-strong my-6" />
+
+        <Corner name="ETH" icon={<EthIcon className="w-8 h-8 sm:w-9 sm:h-9" />} price={eth} accent="eth" align="right" />
+
+        <span
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-xl text-text-faint bg-surface px-2 select-none hidden sm:block"
+          style={{ textShadow: "0 0 20px rgba(11,8,6,0.8)" }}
+        >
+          VS
+        </span>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-border bg-surface/40 p-4">
-        <div className="flex items-center justify-between text-xs text-text-faint mb-2">
-          <span>BTC ahead</span>
-          <span>momentum</span>
-          <span>ETH ahead</span>
-        </div>
-        <div className="relative h-3 rounded-full bg-bg overflow-hidden">
-          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border" />
+      {/* the power meter — a tug-of-war rope, pulled toward whoever's ahead */}
+      <div className="relative border-t border-border px-5 sm:px-7 py-4">
+        <div className="relative h-2 bg-bg-elevated">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-px h-4 bg-border-strong" />
           <motion.div
-            className="absolute top-0 bottom-0 rounded-full"
+            className="absolute top-1/2 -translate-y-1/2 h-2"
             style={{
-              background:
-                lead >= 0
-                  ? "linear-gradient(90deg, transparent, var(--btc))"
-                  : "linear-gradient(90deg, var(--eth), transparent)",
-              left: lead >= 0 ? "50%" : `${50 + lead * 50}%`,
-              right: lead >= 0 ? `${50 - lead * 50}%` : "50%",
+              background: lead >= 0 ? "var(--btc)" : "var(--eth)",
+              left: lead >= 0 ? "50%" : `${pullPct}%`,
+              right: lead >= 0 ? `${100 - pullPct}%` : "50%",
             }}
             transition={{ type: "spring", stiffness: 120, damping: 20 }}
           />
+          <motion.div
+            className="absolute top-1/2 w-3 h-3 rounded-full -translate-y-1/2 -translate-x-1/2"
+            style={{ background: lead >= 0 ? "var(--btc)" : "var(--eth)", left: `${pullPct}%` }}
+            transition={{ type: "spring", stiffness: 120, damping: 20 }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-[11px] text-text-faint mt-2">
+          <span>BTC ahead</span>
+          <span>ETH ahead</span>
         </div>
       </div>
     </div>

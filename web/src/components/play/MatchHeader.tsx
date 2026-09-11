@@ -31,10 +31,10 @@ export function MatchHeader({
   windowLabel: string;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-border bg-surface/60 p-5">
+    <div className="corner-panel flex items-center justify-between px-6 py-5">
       <div>
-        <div className="text-xs text-text-faint uppercase tracking-wide">Current window</div>
-        <div className="font-display font-semibold text-2xl mt-1">{windowLabel}</div>
+        <div className="text-xs text-text-faint">This window closes</div>
+        <div className="font-display text-3xl mt-1">{windowLabel}</div>
         <div
           className="mt-2 inline-flex items-center gap-2 text-sm font-medium"
           style={{ color: PHASE_COLOR[phase] }}

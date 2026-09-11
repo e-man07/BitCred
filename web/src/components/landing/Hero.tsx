@@ -6,103 +6,104 @@ import { BtcIcon, EthIcon } from "@/components/AssetIcon";
 
 export function Hero() {
   return (
-    <section className="max-w-6xl mx-auto px-6 pt-10 pb-16 sm:pt-16 sm:pb-24">
-      <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
-        <div>
+    <section className="relative overflow-hidden">
+      {/* the seam: BTC's corner bleeding in from the top-left, ETH's from
+          the bottom-right, meeting at a hard diagonal line through center */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(122deg, rgba(247,147,26,0.16) 0%, rgba(247,147,26,0.04) 30%, transparent 46%, transparent 54%, rgba(124,140,255,0.04) 70%, rgba(124,140,255,0.16) 100%)",
+        }}
+      />
+      <div
+        className="absolute inset-0 opacity-60"
+        style={{
+          background:
+            "radial-gradient(ellipse 700px 420px at 50% 8%, rgba(243,236,221,0.06), transparent 65%)",
+        }}
+      />
+
+      <div className="relative max-w-4xl mx-auto px-6 pt-16 pb-20 sm:pt-24 sm:pb-28 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center gap-2 border border-border px-3 py-1 text-xs text-text-dim mb-10"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-win pulse-ring" />
+          Live on Somnia Shannon Testnet
+        </motion.div>
+
+        {/* the face-off */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.05 }}
+          className="relative flex items-center justify-center gap-6 sm:gap-12 mb-8"
+        >
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-text-dim mb-6"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            className="relative shrink-0"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-win pulse-ring" />
-            Live on Somnia Shannon Testnet
+            <div className="absolute inset-0 rounded-full bg-btc blur-3xl opacity-30 scale-125" />
+            <BtcIcon className="relative w-24 h-24 sm:w-32 sm:h-32" />
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.05 }}
-            className="font-display font-semibold tracking-tight text-5xl sm:text-6xl lg:text-7xl leading-[0.98]"
+          <span
+            className="font-display text-3xl sm:text-5xl text-text select-none shrink-0"
+            style={{ textShadow: "0 0 30px rgba(243,236,221,0.25)" }}
           >
-            BTC or ETH.
-            <br />
-            <span className="text-text-dim">Pick a side.</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="mt-6 text-lg text-text-dim max-w-lg leading-relaxed"
-          >
-            One five-minute window. Whichever asset's DreamDEX Event Contract
-            resolves Up while the other doesn't, wins the whole pot. Same
-            direction on both? Everyone gets refunded — no house, no
-            ambiguity.
-          </motion.p>
+            VS
+          </span>
 
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
-            className="mt-9 flex items-center gap-4"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+            className="relative shrink-0"
           >
-            <Link
-              href="/play"
-              className="rounded-full bg-text text-bg font-semibold px-7 py-3.5 text-base hover:scale-[1.03] active:scale-[0.98] transition-transform"
-            >
-              Enter the Arena →
-            </Link>
-            <span className="text-sm text-text-faint">
-              No signup. Wallet auto-created in your browser.
-            </span>
+            <div className="absolute inset-0 rounded-full bg-eth blur-3xl opacity-30 scale-125" />
+            <EthIcon className="relative w-24 h-24 sm:w-32 sm:h-32" />
           </motion.div>
-        </div>
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="font-display text-6xl sm:text-8xl leading-[0.92] tracking-tight"
+        >
+          <span className="text-btc">BTC</span> vs <span className="text-eth">ETH</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.25 }}
+          className="mt-6 text-lg text-text-dim max-w-lg mx-auto leading-relaxed"
+        >
+          One five-minute window. Whichever asset's DreamDEX Event Contract
+          resolves Up while the other doesn't, wins the whole pot. Same
+          direction on both? Everyone gets refunded — no house, no
+          ambiguity.
+        </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="relative rounded-3xl border border-border bg-surface/70 p-8 overflow-hidden"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className="mt-10 flex flex-col items-center gap-3"
         >
-          <div
-            className="absolute inset-0 opacity-70"
-            style={{
-              background:
-                "radial-gradient(circle at 15% 20%, rgba(247,147,26,0.18), transparent 45%), radial-gradient(circle at 85% 80%, rgba(123,143,255,0.2), transparent 45%)",
-            }}
-          />
-          <div className="relative flex items-center justify-center gap-6 py-6">
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="flex flex-col items-center gap-3"
-            >
-              <BtcIcon className="w-20 h-20 drop-shadow-[0_0_30px_rgba(247,147,26,0.45)]" />
-              <span className="font-display font-semibold text-xl">BTC</span>
-            </motion.div>
-
-            <span className="font-display text-2xl text-text-faint select-none">VS</span>
-
-            <motion.div
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="flex flex-col items-center gap-3"
-            >
-              <EthIcon className="w-20 h-20 drop-shadow-[0_0_30px_rgba(123,143,255,0.45)]" />
-              <span className="font-display font-semibold text-xl">ETH</span>
-            </motion.div>
-          </div>
-
-          <div className="relative mt-4 rounded-xl border border-border bg-bg/60 px-4 py-3 flex items-center justify-between text-sm">
-            <span className="text-text-dim">Pot split (example)</span>
-            <span className="tabular text-text-faint">54% / 46%</span>
-          </div>
-          <div className="relative mt-2 h-2 rounded-full bg-bg/60 overflow-hidden flex">
-            <div className="h-full bg-btc" style={{ width: "54%" }} />
-            <div className="h-full bg-eth" style={{ width: "46%" }} />
-          </div>
+          <Link
+            href="/play"
+            className="corner-panel-sm bg-text text-bg font-display text-lg px-9 py-3.5 hover:brightness-110 active:brightness-95 transition-[filter]"
+          >
+            Enter the Arena
+          </Link>
+          <span className="text-sm text-text-faint">
+            No signup. Wallet auto-created in your browser.
+          </span>
         </motion.div>
       </div>
     </section>
