@@ -91,10 +91,8 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="mt-6 text-lg text-text-dim max-w-lg mx-auto leading-relaxed"
         >
-          Pick a cadence — 5 minutes, 15 minutes, or an hour. Whichever asset's
-          DreamDEX Event Contract resolves Up while the other doesn't wins the
-          whole pot. Same direction on both? Everyone gets refunded — no
-          house, no ambiguity.
+          Pick BTC or ETH every 5, 15, or 60 minutes. Guess right, win the
+          pot. Tie, get an instant refund. No house, no catch.
         </motion.p>
 
         <motion.div
