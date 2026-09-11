@@ -30,7 +30,7 @@ export default function ProfilePage() {
     <div className="flex-1 bg-arena bg-grain">
       <header className="max-w-3xl mx-auto flex items-center justify-between px-6 py-6">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/bitcred-logo.png" alt="Bitcred" width={24} height={24} />
+          <Image src="/bitcred-logo.png" alt="Bitcred" width={34} height={34} />
           <span className="font-display text-lg tracking-wide">Bitcred</span>
         </Link>
         <WalletBadge />

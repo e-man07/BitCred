@@ -9,7 +9,7 @@ export default function Home() {
     <div className="flex-1 bg-arena bg-grain">
       <header className="max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <Image src="/bitcred-logo.png" alt="Bitcred" width={28} height={28} priority />
+          <Image src="/bitcred-logo.png" alt="Bitcred" width={40} height={40} priority />
           <span className="font-display text-xl tracking-wide">Bitcred</span>
         </div>
         <nav className="flex items-center gap-6 text-sm text-text-dim">
