@@ -35,21 +35,19 @@ function Corner({
           {name}
         </div>
       </div>
-      <div className="mt-3 font-mono tabular text-2xl sm:text-3xl font-medium">
+      <div className="text-[11px] text-text-faint mt-3">Mark price</div>
+      <div className="font-mono tabular text-2xl sm:text-3xl font-medium leading-tight">
         ${formatUsd(price.mark)}
       </div>
-      <div className={clsx("flex items-center gap-2 mt-0.5", align === "right" && "flex-row-reverse")}>
-        <span
-          className={clsx(
-            "font-mono tabular text-sm font-semibold",
-            price.pctChange === null ? "text-text-faint" : up ? "text-win" : "text-lose"
-          )}
-        >
-          {formatPct(price.pctChange)}
-        </span>
-        <span className="text-[10px] text-text-faint">mark</span>
-      </div>
-      <div className="text-xs text-text-faint font-mono tabular mt-2">
+      <span
+        className={clsx(
+          "font-mono tabular text-sm font-semibold mt-0.5",
+          price.pctChange === null ? "text-text-faint" : up ? "text-win" : "text-lose"
+        )}
+      >
+        {formatPct(price.pctChange)}
+      </span>
+      <div className="text-xs text-text-faint font-mono tabular mt-3 pt-2 border-t border-border w-full">
         spot ${formatUsd(price.live)}
       </div>
     </div>
