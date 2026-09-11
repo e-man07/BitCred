@@ -1,14 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useWallet, formatSTT } from "@/lib/wallet";
 import { shortAddr } from "@/lib/format";
 
 export function WalletBadge() {
   const { address, balance, ready, connecting, connect, disconnect, requestFaucet, faucetPending } =
     useWallet();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onOutside(e: MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, [menuOpen]);
 
   if (!ready || !address) {
     return (
@@ -48,6 +62,7 @@ export function WalletBadge() {
   }
 
   async function disconnectWallet() {
+    setMenuOpen(false);
     setError(null);
     try {
       await disconnect();
@@ -59,16 +74,15 @@ export function WalletBadge() {
   const low = balance < 10n ** 16n; // < 0.01 STT
 
   return (
-    <div className="flex items-center gap-2">
+    <div ref={rootRef} className="relative flex items-center gap-2">
       <button
-        onClick={copy}
+        onClick={() => setMenuOpen((v) => !v)}
         className="rounded-full border border-border bg-surface/60 px-4 py-2 text-sm flex items-center gap-2 hover:border-text-faint transition-colors"
         title={address}
       >
         <span className="w-1.5 h-1.5 rounded-full bg-eth" />
         <span className="tabular">{shortAddr(address)}</span>
         <span className="text-text-dim tabular">{formatSTT(balance, 3)} STT</span>
-        {copied && <span className="text-win text-xs">copied</span>}
       </button>
       <button
         onClick={faucet}
@@ -81,13 +95,33 @@ export function WalletBadge() {
       >
         {faucetPending ? "sending…" : "Get test STT"}
       </button>
-      <button
-        onClick={disconnectWallet}
-        className="hidden sm:inline rounded-full px-3 py-2 text-sm font-medium border border-border text-text-dim hover:border-text-faint transition-colors"
-      >
-        Disconnect
-      </button>
       {error && <span className="text-lose text-xs max-w-40">{error}</span>}
+
+      {menuOpen && (
+        <div className="absolute right-0 top-[calc(100%+8px)] w-44 corner-panel-sm border border-border bg-surface py-1 z-20 shadow-lg">
+          <button
+            onClick={() => {
+              copy();
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-text-dim hover:text-text hover:bg-surface-2 transition-colors"
+          >
+            {copied ? "Copied!" : "Copy address"}
+          </button>
+          <Link
+            href="/profile"
+            onClick={() => setMenuOpen(false)}
+            className="block px-4 py-2 text-sm text-text-dim hover:text-text hover:bg-surface-2 transition-colors"
+          >
+            Profile
+          </Link>
+          <button
+            onClick={disconnectWallet}
+            className="w-full text-left px-4 py-2 text-sm text-lose hover:bg-surface-2 transition-colors"
+          >
+            Disconnect
+          </button>
+        </div>
+      )}
     </div>
   );
 }

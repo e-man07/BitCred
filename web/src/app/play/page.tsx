@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { WalletBadge } from "@/components/play/WalletBadge";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { SiteHeader } from "@/components/SiteHeader";
 import { MatchHeader, Phase } from "@/components/play/MatchHeader";
 import { CadenceTabs } from "@/components/play/CadenceTabs";
 import { RaceView } from "@/components/play/RaceView";
@@ -14,20 +13,24 @@ import { SettlementOverlay } from "@/components/play/SettlementOverlay";
 import { HistoryStrip } from "@/components/play/HistoryStrip";
 import { useWindow } from "@/hooks/useWindow";
 import { usePrices } from "@/hooks/usePrices";
+import { useNow } from "@/hooks/useNow";
 import { useWallet } from "@/lib/wallet";
 import { CADENCES, readStakes } from "@/lib/chain";
 
-function useNow() {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return now;
+export default function PlayPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 bg-arena bg-grain" />}>
+      <PlayPageInner />
+    </Suspense>
+  );
 }
 
-export default function PlayPage() {
-  const [cadenceSec, setCadenceSec] = useState(CADENCES[0]?.sec ?? 300);
+function PlayPageInner() {
+  const searchParams = useSearchParams();
+  const [cadenceSec, setCadenceSec] = useState(() => {
+    const fromUrl = Number(searchParams.get("cadence"));
+    return CADENCES.some((c) => c.sec === fromUrl) ? fromUrl : CADENCES[0]?.sec ?? 300;
+  });
   const { expiry, window: win, prevWindow, history } = useWindow(cadenceSec);
   const { address } = useWallet();
   const now = useNow();
@@ -91,21 +94,7 @@ export default function PlayPage() {
 
   return (
     <div className="flex-1 bg-arena bg-grain">
-      <header className="max-w-3xl mx-auto flex items-center justify-between px-6 py-6">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/bitcred-logo.png" alt="Bitcred" width={34} height={34} />
-          <span className="font-display text-lg tracking-wide">Bitcred</span>
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/profile"
-            className="text-sm text-text-dim hover:text-text transition-colors hidden sm:inline"
-          >
-            Profile
-          </Link>
-          <WalletBadge />
-        </div>
-      </header>
+      <SiteHeader maxWidth="max-w-3xl" />
 
       <main className="max-w-3xl mx-auto px-6 pb-20">
         <div className="flex justify-center mb-6">

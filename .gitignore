@@ -8,3 +8,4 @@ broadcast/
 *.log
 phase0/
 
+.vercel

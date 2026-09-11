@@ -1,5 +1,4 @@
-import Link from "next/link";
-import Image from "next/image";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Hero } from "@/components/landing/Hero";
 import { TrustStrip } from "@/components/landing/TrustStrip";
 import { Problem } from "@/components/landing/Problem";
@@ -13,34 +12,7 @@ import { ClosingCta } from "@/components/landing/ClosingCta";
 export default function Home() {
   return (
     <div className="flex-1 bg-arena bg-grain">
-      <header className="max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
-        <div className="flex items-center gap-2">
-          <Image src="/bitcred-logo.png" alt="Bitcred" width={40} height={40} priority />
-          <span className="font-display text-xl tracking-wide">Bitcred</span>
-        </div>
-        <nav className="flex items-center gap-6 text-sm text-text-dim">
-          <a
-            href="https://shannon-explorer.somnia.network"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-text transition-colors hidden sm:inline"
-          >
-            Shannon Testnet
-          </a>
-          <Link
-            href="/profile"
-            className="hover:text-text transition-colors hidden sm:inline"
-          >
-            Profile
-          </Link>
-          <Link
-            href="/play"
-            className="corner-panel-sm bg-text text-bg font-medium px-4 py-2 text-sm hover:brightness-110 transition-[filter]"
-          >
-            Enter the Arena
-          </Link>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <Hero />
       <TrustStrip />
