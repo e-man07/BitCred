@@ -1,0 +1,19 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.24"
+# Somnia's execution engine appears not to support PUSH0 (Shanghai, EIP-3855) —
+# a contract deployed with the default evm_version always reverted, consuming
+# 100% of whatever gas limit was given (the invalid-opcode signature), while
+# local revm simulation (which does support PUSH0) executed it fine. Target
+# Paris to avoid emitting PUSH0 entirely.
+evm_version = "paris"
+
+[rpc_endpoints]
+shannon = "https://dream-rpc.somnia.network"
+
+[etherscan]
+shannon = { key = "unused", url = "https://shannon-explorer.somnia.network/api" }
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

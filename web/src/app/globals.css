@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #08090c;
+  --bg-elevated: #0f1116;
+  --surface: #14161c;
+  --surface-2: #1b1e26;
+  --border: #262a34;
+  --text: #f4f5f7;
+  --text-dim: #9298a6;
+  --text-faint: #5b6170;
+
+  --btc: #f7931a;
+  --btc-glow: #ffb84d;
+  --eth: #7b8fff;
+  --eth-glow: #a6b4ff;
+
+  --win: #2ee6a6;
+  --lose: #ff5c72;
+  --draw: #f2c34d;
+
+  --font-display: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-dim: var(--text-dim);
+  --color-text-faint: var(--text-faint);
+  --color-btc: var(--btc);
+  --color-btc-glow: var(--btc-glow);
+  --color-eth: var(--eth);
+  --color-eth-glow: var(--eth-glow);
+  --color-win: var(--win);
+  --color-lose: var(--lose);
+  --color-draw: var(--draw);
+  --font-sans: var(--font-display);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.bg-noise {
+  background-image: radial-gradient(circle at 20% 15%, rgba(247, 147, 26, 0.10), transparent 40%),
+    radial-gradient(circle at 82% 78%, rgba(123, 143, 255, 0.12), transparent 42%);
+}
+
+.grid-lines {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--eth);
+  color: #060608;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(255, 255, 255, 0);
+  }
+}
+
+.pulse-ring {
+  animation: pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
