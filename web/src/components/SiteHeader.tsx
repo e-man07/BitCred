@@ -12,9 +12,14 @@ export function SiteHeader({ maxWidth = "max-w-6xl" }: { maxWidth?: string }) {
   const pathname = usePathname();
 
   return (
-    <header className={clsx(maxWidth, "mx-auto flex items-center justify-between px-6 py-6 gap-4")}>
+    <header
+      className={clsx(
+        maxWidth,
+        "mx-auto flex items-center justify-between px-4 sm:px-6 py-6 gap-2 sm:gap-4"
+      )}
+    >
       <Link href="/" className="flex items-center gap-2 shrink-0">
-        <Image src="/bitcred-logo.png" alt="Bitcred" width={32} height={32} priority />
+        <Image src="/bitcred-logo.png" alt="Bitcred" width={32} height={32} priority className="shrink-0" />
         <span className="font-display text-lg tracking-wide">Bitcred</span>
       </Link>
 
@@ -33,13 +38,14 @@ export function SiteHeader({ maxWidth = "max-w-6xl" }: { maxWidth?: string }) {
         ))}
       </nav>
 
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {pathname !== "/play" && (
           <Link
             href="/play"
-            className="corner-panel-sm bg-text text-bg font-medium px-4 py-2 text-sm hover:brightness-110 transition-[filter]"
+            className="corner-panel-sm bg-text text-bg font-medium px-3 sm:px-4 py-2 text-sm hover:brightness-110 transition-[filter] whitespace-nowrap"
           >
-            Enter the Arena
+            <span className="sm:hidden">Play</span>
+            <span className="hidden sm:inline">Enter the Arena</span>
           </Link>
         )}
         <WalletBadge />

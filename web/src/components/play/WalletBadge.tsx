@@ -34,10 +34,17 @@ export function WalletBadge() {
           }
         }}
         disabled={connecting}
-        className="rounded-full border border-border bg-surface/60 px-4 py-2 text-sm font-medium text-text hover:border-text-faint transition-colors disabled:opacity-50 flex items-center gap-2"
+        className="rounded-full border border-border bg-surface/60 px-3 sm:px-4 py-2 text-sm font-medium text-text hover:border-text-faint transition-colors disabled:opacity-50 flex items-center gap-2 whitespace-nowrap"
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-eth" />
-        {connecting ? "connecting…" : "Connect wallet"}
+        <span className="w-1.5 h-1.5 rounded-full bg-eth shrink-0" />
+        {connecting ? (
+          "connecting…"
+        ) : (
+          <>
+            <span className="sm:hidden">Connect</span>
+            <span className="hidden sm:inline">Connect wallet</span>
+          </>
+        )}
         {error && <span className="text-lose text-xs max-w-40">{error}</span>}
       </button>
     );
@@ -57,11 +64,11 @@ export function WalletBadge() {
     <div ref={rootRef} className="relative flex items-center gap-2">
       <button
         onClick={() => setMenuOpen((v) => !v)}
-        className="rounded-full border border-border bg-surface/60 px-4 py-2 text-sm flex items-center gap-2 hover:border-text-faint transition-colors"
+        className="rounded-full border border-border bg-surface/60 px-3 sm:px-4 py-2 text-sm flex items-center gap-2 hover:border-text-faint transition-colors whitespace-nowrap"
         title={address}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-eth" />
-        <span className="tabular">{shortAddr(address)}</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-eth shrink-0" />
+        <span className="tabular">{shortAddr(address, 3)}</span>
       </button>
       {error && <span className="text-lose text-xs max-w-40">{error}</span>}
 
