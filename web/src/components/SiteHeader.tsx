@@ -34,15 +34,15 @@ export function SiteHeader({ maxWidth = "max-w-6xl" }: { maxWidth?: string }) {
       </nav>
 
       <div className="flex items-center gap-3 shrink-0">
-        <WalletBadge />
         {pathname !== "/play" && (
           <Link
             href="/play"
-            className="corner-panel-sm bg-text text-bg font-medium px-4 py-2 text-sm hover:brightness-110 transition-[filter] hidden md:inline-block"
+            className="corner-panel-sm bg-text text-bg font-medium px-4 py-2 text-sm hover:brightness-110 transition-[filter]"
           >
             Enter the Arena
           </Link>
         )}
+        <WalletBadge />
       </div>
     </header>
   );
