@@ -9,6 +9,10 @@ solc_version = "0.8.24"
 # local revm simulation (which does support PUSH0) executed it fine. Target
 # Paris to avoid emitting PUSH0 entirely.
 evm_version = "paris"
+# openWindow's parameter/local count trips the legacy codegen's stack-depth
+# limit ("stack too deep") once cadenceSec was added; via_ir compiles
+# through Yul instead, which doesn't have that ceiling.
+via_ir = true
 
 [rpc_endpoints]
 shannon = "https://dream-rpc.somnia.network"

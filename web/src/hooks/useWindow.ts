@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  CADENCE_SEC,
+  CADENCE_MODULUS,
   CONTRACT_ADDRESS,
   ChainWindow,
   MATCHUP_ABI,
@@ -11,10 +11,12 @@ import {
   currentBoundary,
   publicClient,
   readWindow,
+  windowIdFor,
 } from "@/lib/chain";
 
 export type HistoryEntry = {
-  windowId: number;
+  windowId: bigint;
+  expiresAt: number;
   status: Status;
   winner: Side;
   potBTC: bigint;
@@ -29,27 +31,34 @@ const POLL_MS = 3000;
 const LOG_PAGE_BLOCKS = 1000n;
 const MAX_LOG_PAGES = 20;
 
-export function useWindow() {
-  const [expiry, setExpiry] = useState<number>(() => currentBoundary());
+export function useWindow(cadenceSec: number) {
+  const [expiry, setExpiry] = useState<number>(() => currentBoundary(cadenceSec));
   const [window_, setWindow] = useState<ChainWindow | null>(null);
   const [prevWindow, setPrevWindow] = useState<ChainWindow | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   const expiryRef = useRef(expiry);
   const prevWindowRef = useRef<ChainWindow | null>(null);
-  const bootstrapped = useRef(false);
+  const bootstrappedFor = useRef<number | null>(null);
 
   // Poll the active window on a fixed cadence boundary; keep refreshing the
   // just-closed window until it resolves so the settlement moment has fresh data.
   useEffect(() => {
     let cancelled = false;
 
+    // Cadence switch — reset to that cadence's own current boundary.
+    expiryRef.current = currentBoundary(cadenceSec);
+    prevWindowRef.current = null;
+    setExpiry(expiryRef.current);
+    setWindow(null);
+    setPrevWindow(null);
+
     async function poll() {
-      const boundary = currentBoundary();
+      const boundary = currentBoundary(cadenceSec);
 
       if (boundary !== expiryRef.current) {
         try {
-          const closed = await readWindow(expiryRef.current);
+          const closed = await readWindow(windowIdFor(expiryRef.current, cadenceSec));
           if (!cancelled && closed.expiresAt !== 0) {
             prevWindowRef.current = closed;
             setPrevWindow(closed);
@@ -62,7 +71,7 @@ export function useWindow() {
       }
 
       try {
-        const w = await readWindow(expiryRef.current);
+        const w = await readWindow(windowIdFor(expiryRef.current, cadenceSec));
         if (!cancelled) setWindow(w.expiresAt === 0 ? null : w);
       } catch {
         /* transient RPC error, ignore this tick */
@@ -70,7 +79,9 @@ export function useWindow() {
 
       if (prevWindowRef.current && prevWindowRef.current.status === Status.OPEN) {
         try {
-          const closed = await readWindow(prevWindowRef.current.expiresAt);
+          const closed = await readWindow(
+            windowIdFor(prevWindowRef.current.expiresAt, cadenceSec)
+          );
           if (!cancelled) {
             prevWindowRef.current = closed;
             setPrevWindow(closed);
@@ -87,12 +98,13 @@ export function useWindow() {
       cancelled = true;
       clearInterval(id);
     };
-  }, []);
+  }, [cadenceSec]);
 
-  // One-time best-effort history bootstrap from Settled events.
+  // One-time-per-cadence best-effort history bootstrap from Settled events.
   useEffect(() => {
-    if (bootstrapped.current) return;
-    bootstrapped.current = true;
+    if (bootstrappedFor.current === cadenceSec) return;
+    bootstrappedFor.current = cadenceSec;
+    setHistory([]);
 
     (async () => {
       try {
@@ -111,8 +123,10 @@ export function useWindow() {
             toBlock,
           });
           for (const log of logs as unknown as SettledLog[]) {
+            if (log.args.windowId % CADENCE_MODULUS !== BigInt(cadenceSec)) continue;
             collected.push({
-              windowId: Number(log.args.windowId),
+              windowId: log.args.windowId,
+              expiresAt: Number(log.args.windowId / CADENCE_MODULUS),
               status: log.args.status as Status,
               winner: log.args.winner as Side,
               potBTC: 0n,
@@ -123,7 +137,7 @@ export function useWindow() {
           toBlock = fromBlock - 1n;
         }
 
-        const entries = collected.sort((a, b) => b.windowId - a.windowId).slice(0, 8);
+        const entries = collected.sort((a, b) => b.expiresAt - a.expiresAt).slice(0, 8);
 
         const withPots = await Promise.all(
           entries.map(async (e) => {
@@ -140,16 +154,17 @@ export function useWindow() {
         // RPC may not support wide log ranges — fine, history just starts empty.
       }
     })();
-  }, []);
+  }, [cadenceSec]);
 
   // Append newly-observed settlements (from prevWindow transitions) to history.
   useEffect(() => {
     if (!prevWindow || prevWindow.status === Status.OPEN) return;
     setHistory((h) => {
-      if (h.some((e) => e.windowId === prevWindow.expiresAt)) return h;
+      if (h.some((e) => e.windowId === prevWindow.id)) return h;
       return [
         {
-          windowId: prevWindow.expiresAt,
+          windowId: prevWindow.id,
+          expiresAt: prevWindow.expiresAt,
           status: prevWindow.status,
           winner: prevWindow.winner,
           potBTC: prevWindow.potBTC,
@@ -160,5 +175,5 @@ export function useWindow() {
     });
   }, [prevWindow]);
 
-  return { expiry, window: window_, prevWindow, history, cadenceSec: CADENCE_SEC };
+  return { expiry, window: window_, prevWindow, history };
 }

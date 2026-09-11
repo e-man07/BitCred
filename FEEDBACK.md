@@ -138,11 +138,25 @@ and had to verify against the indexer directly (`intervalSec` filter on
 listing the available cadences per asset would remove that ambiguity for
 the next builder.
 
+## 9. `listBinaryMarkets` is noticeably slower for less-common `intervalSec` values
+
+After extending our resolver to run three cadences (5m/15m/1h) concurrently,
+the 5m and 15m `listBinaryMarkets({ intervalSec: ... })` queries consistently
+returned in well under a second, but the identical query with
+`intervalSec: 3600` (1h) timed out repeatedly (~60s+) before eventually
+succeeding a few retries later. Nothing else about the query differed. Our
+resolver's retry loop absorbed this fine (it just tries again next tick), but
+a caller without a retry loop — or a UI doing this on first paint — would see
+a hard failure or a long hang for no obvious reason. We'd guess this is a
+query-planning or caching quirk on the indexer's side for lower-volume
+cadences, but flagging it as a real, reproducible thing we hit.
+
 ---
 
 None of the above are complaints about the product working — everything
 above was fully usable once we found the right incantation, and the
 underlying settlement data (which is all we actually depend on) has been
-completely reliable in ~40+ minutes of continuous resolver operation
-against live testnet windows. These are all "the docs didn't say" gaps,
-not correctness bugs.
+completely reliable across many hours of continuous resolver operation
+against live testnet windows, including a full afternoon running three
+cadences concurrently. These are all "the docs didn't say" gaps, not
+correctness bugs.

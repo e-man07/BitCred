@@ -8,10 +8,16 @@ pragma solidity ^0.8.24;
 ///         both resolve the same direction, the window is a draw and everyone
 ///         is refunded their exact stake.
 /// @dev Design notes (deliberate simplifications over a literal 1:1 spec read):
-///      - `windowId` IS the DreamDEX window's shared expiry timestamp (unix
-///        seconds). BTC and ETH Event Contract windows share a clock on
-///        DreamDEX, so the expiry is already a natural, collision-free,
-///        auditable key — no separate counter needed.
+///      - `windowId` is DERIVED on-chain as `expiresAt * 1_000_000 +
+///        cadenceSec`, never passed in directly. BTC and ETH Event Contract
+///        windows share a clock on DreamDEX, so the expiry is a natural key —
+///        but DreamDEX runs several cadences concurrently per asset (5m/15m/
+///        1h/...) and cadence multiples of each other share expiry
+///        timestamps (every 15m expiry is also a 5m expiry), so cadence must
+///        be folded into the id or two cadences' windows collide. Encoding
+///        rather than hashing keeps the id human-decodable: `windowId /
+///        1_000_000` is the expiry, `windowId % 1_000_000` is the cadence.
+///        cadenceSec is bounded well under 1_000_000 (see openWindow).
 ///      - `openWindow` / `settle` are restricted to `owner`/`resolver` (an
 ///        off-chain keeper), not fully permissionless — an attacker could
 ///        otherwise front-run a real window with garbage DreamDEX market ids
@@ -32,10 +38,11 @@ contract MatchupMarket {
     }
 
     struct Window {
-        uint256 id; // == expiresAt, the shared DreamDEX window close
+        uint256 id; // == expiresAt * 1_000_000 + cadenceSec
         uint64 opensAt;
         uint64 locksAt; // picks close (expiresAt - LOCK_BUFFER)
         uint64 expiresAt; // DreamDEX window close
+        uint32 cadenceSec; // DreamDEX series cadence this window belongs to
         Status status;
         Side winner; // meaningful only when status == SETTLED
         uint256 potBTC;
@@ -45,6 +52,11 @@ contract MatchupMarket {
         bytes32 btcMarketId; // DreamDEX BTC Event Contract marketId, for audit
         bytes32 ethMarketId; // DreamDEX ETH Event Contract marketId, for audit
     }
+
+    /// @notice cadenceSec must be strictly less than this so `expiresAt *
+    ///         CADENCE_MODULUS + cadenceSec` can never collide across two
+    ///         different expiries.
+    uint256 public constant CADENCE_MODULUS = 1_000_000;
 
     /// @notice Seconds before a window's expiry that picks stop being accepted.
     uint64 public constant LOCK_BUFFER = 30;
@@ -66,6 +78,7 @@ contract MatchupMarket {
         uint64 opensAt,
         uint64 locksAt,
         uint64 expiresAt,
+        uint32 cadenceSec,
         bytes32 btcMarketId,
         bytes32 ethMarketId
     );
@@ -117,33 +130,33 @@ contract MatchupMarket {
     }
 
     /// @notice Open a new matchup window bound to a specific DreamDEX BTC
-    ///         market and ETH market. `expiresAt` must be the shared expiry
-    ///         both DreamDEX markets settle at.
-    function openWindow(uint256 expiresAt, bytes32 btcMarketId, bytes32 ethMarketId) external onlyOperator {
+    ///         market and ETH market at a given cadence. `expiresAt` must be
+    ///         the shared expiry both DreamDEX markets settle at; `windowId`
+    ///         is derived on-chain, never supplied by the caller.
+    function openWindow(uint256 expiresAt, uint32 cadenceSec, bytes32 btcMarketId, bytes32 ethMarketId)
+        external
+        onlyOperator
+        returns (uint256 windowId)
+    {
         require(expiresAt > block.timestamp, "ALREADY_EXPIRED");
-        require(windows[expiresAt].expiresAt == 0, "WINDOW_EXISTS");
         // forge-lint: disable-next-line(unsafe-typecast)
         require(expiresAt <= type(uint64).max, "EXPIRY_OVERFLOW");
+        require(cadenceSec > 0 && cadenceSec < CADENCE_MODULUS, "BAD_CADENCE");
 
-        uint64 locksAt =
-            expiresAt > LOCK_BUFFER ? uint64(expiresAt - LOCK_BUFFER) : uint64(expiresAt);
+        windowId = expiresAt * CADENCE_MODULUS + cadenceSec;
+        Window storage w = windows[windowId];
+        require(w.expiresAt == 0, "WINDOW_EXISTS");
 
-        windows[expiresAt] = Window({
-            id: expiresAt,
-            opensAt: uint64(block.timestamp),
-            locksAt: locksAt,
-            expiresAt: uint64(expiresAt),
-            status: Status.OPEN,
-            winner: Side.BTC,
-            potBTC: 0,
-            potETH: 0,
-            btcUp: false,
-            ethUp: false,
-            btcMarketId: btcMarketId,
-            ethMarketId: ethMarketId
-        });
+        w.id = windowId;
+        w.opensAt = uint64(block.timestamp);
+        w.locksAt = expiresAt > LOCK_BUFFER ? uint64(expiresAt - LOCK_BUFFER) : uint64(expiresAt);
+        w.expiresAt = uint64(expiresAt);
+        w.cadenceSec = cadenceSec;
+        w.status = Status.OPEN;
+        w.btcMarketId = btcMarketId;
+        w.ethMarketId = ethMarketId;
 
-        emit WindowOpened(expiresAt, uint64(block.timestamp), locksAt, uint64(expiresAt), btcMarketId, ethMarketId);
+        emit WindowOpened(windowId, w.opensAt, w.locksAt, w.expiresAt, cadenceSec, btcMarketId, ethMarketId);
     }
 
     /// @notice Stake native currency on a side of a window. A user may add to

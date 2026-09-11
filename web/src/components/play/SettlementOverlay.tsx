@@ -9,7 +9,7 @@ import { useWallet, formatSTT } from "@/lib/wallet";
 
 export function SettlementOverlay({ window: w }: { window: ChainWindow | null }) {
   const { address, claim } = useWallet();
-  const [dismissedId, setDismissedId] = useState<number | null>(null);
+  const [dismissedId, setDismissedId] = useState<bigint | null>(null);
   const [stake, setStake] = useState<{ btc: bigint; eth: bigint; claimed: boolean; claimable: bigint } | null>(
     null
   );
@@ -21,16 +21,16 @@ export function SettlementOverlay({ window: w }: { window: ChainWindow | null })
     setClaimedTx(null);
     if (!w || !address || w.status === Status.OPEN) return;
     let cancelled = false;
-    readStakes(w.expiresAt, address).then((s) => {
+    readStakes(w.id, address).then((s) => {
       if (!cancelled)
         setStake({ btc: s.stakeBTC, eth: s.stakeETH, claimed: s.claimed, claimable: s.claimable });
     });
     return () => {
       cancelled = true;
     };
-  }, [w?.expiresAt, w?.status, address]);
+  }, [w?.id, w?.status, address]);
 
-  if (!w || w.status === Status.OPEN || dismissedId === w.expiresAt) return null;
+  if (!w || w.status === Status.OPEN || dismissedId === w.id) return null;
 
   const isDraw = w.status === Status.DRAW;
   const userInvolved = stake && (stake.btc > 0n || stake.eth > 0n);
@@ -40,9 +40,9 @@ export function SettlementOverlay({ window: w }: { window: ChainWindow | null })
   async function handleClaim() {
     setClaiming(true);
     try {
-      const hash = await claim(w!.expiresAt);
+      const hash = await claim(w!.id);
       setClaimedTx(hash);
-      const s = await readStakes(w!.expiresAt, address!);
+      const s = await readStakes(w!.id, address!);
       setStake({ btc: s.stakeBTC, eth: s.stakeETH, claimed: s.claimed, claimable: s.claimable });
     } finally {
       setClaiming(false);
@@ -68,7 +68,7 @@ export function SettlementOverlay({ window: w }: { window: ChainWindow | null })
         {!isDraw && userWon && <Confetti />}
 
         <button
-          onClick={() => setDismissedId(w.expiresAt)}
+          onClick={() => setDismissedId(w.id)}
           className="absolute top-4 right-4 text-text-faint hover:text-text text-sm"
         >
           dismiss

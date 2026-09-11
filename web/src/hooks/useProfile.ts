@@ -2,26 +2,27 @@
 
 import { useEffect, useState } from "react";
 import {
-  CADENCE_SEC,
+  CADENCES,
   Side,
   Status,
   currentBoundary,
-  publicClient,
   readStakes,
   readWindow,
+  windowIdFor,
 } from "@/lib/chain";
 
-// windowId is a deterministic function of time (multiples of CADENCE_SEC), so
-// unlike a Settled/Picked event scan — which on Shannon means paginating
+// windowId is deterministic (expiresAt * CADENCE_MODULUS + cadenceSec), so
+// unlike a Picked/Claimed event scan — which on Shannon means paginating
 // eth_getLogs in 1000-block pages (FEEDBACK.md #4), far too slow to reach
-// back more than ~90 minutes — we can probe a bounded set of recent
-// candidate windows directly via eth_call. The public client batches these
-// into a handful of HTTP round-trips (see lib/chain.ts), so this stays fast
-// even at a few hundred candidates.
-const LOOKBACK_WINDOWS = 300; // ~25 hours at the 5-minute cadence
+// back more than ~90 minutes — we probe a bounded set of recent candidate
+// windows directly via eth_call, across every cadence the app supports. The
+// public client batches these into a handful of HTTP round-trips.
+const LOOKBACK_PER_CADENCE = 120; // e.g. 10 hours at 5m, 30h at 15m, 5 days at 1h
 
 export type ProfileEntry = {
-  windowId: number;
+  windowId: bigint;
+  expiresAt: number;
+  cadenceSec: number;
   side: Side;
   staked: bigint;
   status: Status;
@@ -72,24 +73,25 @@ export function useProfile(address: `0x${string}` | null) {
     (async () => {
       setLoading(true);
       try {
-        const boundary = currentBoundary();
-        const candidates = Array.from(
-          { length: LOOKBACK_WINDOWS },
-          (_, i) => boundary - i * CADENCE_SEC
-        ).filter((id) => id > 0);
+        const candidates = CADENCES.flatMap(({ sec }) => {
+          const boundary = currentBoundary(sec);
+          return Array.from({ length: LOOKBACK_PER_CADENCE }, (_, i) => ({
+            expiresAt: boundary - i * sec,
+            cadenceSec: sec,
+          })).filter((c) => c.expiresAt > 0);
+        });
 
-        // Cheap first pass: just the two stake mappings per candidate,
-        // batched by the transport into a few HTTP calls.
         const stakes = await Promise.all(
-          candidates.map((windowId) => readStakes(windowId, address))
+          candidates.map((c) => readStakes(windowIdFor(c.expiresAt, c.cadenceSec), address))
         );
 
         const hits = candidates
-          .map((windowId, i) => ({ windowId, s: stakes[i] }))
+          .map((c, i) => ({ ...c, s: stakes[i] }))
           .filter(({ s }) => s.stakeBTC > 0n || s.stakeETH > 0n);
 
         const built: (ProfileEntry & { settledPayout: bigint })[] = await Promise.all(
-          hits.map(async ({ windowId, s }) => {
+          hits.map(async ({ expiresAt, cadenceSec, s }) => {
+            const windowId = windowIdFor(expiresAt, cadenceSec);
             const w = await readWindow(windowId);
             const side = s.stakeBTC > 0n ? Side.BTC : Side.ETH;
             const staked = s.stakeBTC > 0n ? s.stakeBTC : s.stakeETH;
@@ -112,6 +114,8 @@ export function useProfile(address: `0x${string}` | null) {
 
             return {
               windowId,
+              expiresAt,
+              cadenceSec,
               side,
               staked,
               status: w.status,
@@ -124,7 +128,7 @@ export function useProfile(address: `0x${string}` | null) {
           })
         );
 
-        built.sort((a, b) => b.windowId - a.windowId);
+        built.sort((a, b) => b.expiresAt - a.expiresAt);
         if (cancelled) return;
         setEntries(built);
 

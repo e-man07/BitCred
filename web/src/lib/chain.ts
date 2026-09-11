@@ -5,7 +5,26 @@ export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL ?? "https://dream-rpc.som
 export const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? "50312");
 export const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
   "") as `0x${string}`;
-export const CADENCE_SEC = Number(process.env.NEXT_PUBLIC_CADENCE_SEC ?? "300");
+export type Cadence = { sec: number; label: string };
+
+export const CADENCES: Cadence[] = (process.env.NEXT_PUBLIC_CADENCES_SEC ?? "300,900,3600")
+  .split(",")
+  .map((s) => Number(s.trim()))
+  .filter((n) => n > 0)
+  .map((sec) => ({ sec, label: cadenceLabel(sec) }));
+
+function cadenceLabel(sec: number): string {
+  if (sec % 3600 === 0) return `${sec / 3600}h`;
+  return `${sec / 60}m`;
+}
+
+// windowId = expiresAt * CADENCE_MODULUS + cadenceSec — must match
+// MatchupMarket.sol's on-chain derivation exactly.
+export const CADENCE_MODULUS = 1_000_000n;
+
+export function windowIdFor(expiry: number, cadenceSec: number): bigint {
+  return BigInt(expiry) * CADENCE_MODULUS + BigInt(cadenceSec);
+}
 
 export const shannon = defineChain({
   id: CHAIN_ID,
@@ -47,6 +66,7 @@ export type ChainWindow = {
   opensAt: number;
   locksAt: number;
   expiresAt: number;
+  cadenceSec: number;
   status: Status;
   winner: Side;
   potBTC: bigint;
@@ -57,9 +77,9 @@ export type ChainWindow = {
   ethMarketId: `0x${string}`;
 };
 
-export function currentBoundary(nowMs = Date.now()): number {
+export function currentBoundary(cadenceSec: number, nowMs = Date.now()): number {
   const nowSec = Math.floor(nowMs / 1000);
-  return Math.ceil(nowSec / CADENCE_SEC) * CADENCE_SEC;
+  return Math.ceil(nowSec / cadenceSec) * cadenceSec;
 }
 
 type RawWindow = {
@@ -67,6 +87,7 @@ type RawWindow = {
   opensAt: number;
   locksAt: number;
   expiresAt: number;
+  cadenceSec: number;
   status: number;
   winner: number;
   potBTC: bigint;
@@ -77,12 +98,12 @@ type RawWindow = {
   ethMarketId: `0x${string}`;
 };
 
-export async function readWindow(expiry: number): Promise<ChainWindow> {
+export async function readWindow(windowId: bigint): Promise<ChainWindow> {
   const w = (await publicClient.readContract({
     address: CONTRACT_ADDRESS,
     abi: MATCHUP_ABI,
     functionName: "getWindow",
-    args: [BigInt(expiry)],
+    args: [windowId],
   })) as unknown as RawWindow;
 
   return {
@@ -90,6 +111,7 @@ export async function readWindow(expiry: number): Promise<ChainWindow> {
     opensAt: Number(w.opensAt),
     locksAt: Number(w.locksAt),
     expiresAt: Number(w.expiresAt),
+    cadenceSec: Number(w.cadenceSec),
     status: w.status as Status,
     winner: w.winner as Side,
     potBTC: w.potBTC,
@@ -101,31 +123,31 @@ export async function readWindow(expiry: number): Promise<ChainWindow> {
   };
 }
 
-export async function readStakes(expiry: number, address: `0x${string}`) {
+export async function readStakes(windowId: bigint, address: `0x${string}`) {
   const [stakeBTC, stakeETH, claimed, claimable] = await Promise.all([
     publicClient.readContract({
       address: CONTRACT_ADDRESS,
       abi: MATCHUP_ABI,
       functionName: "stakeBTC",
-      args: [BigInt(expiry), address],
+      args: [windowId, address],
     }) as Promise<bigint>,
     publicClient.readContract({
       address: CONTRACT_ADDRESS,
       abi: MATCHUP_ABI,
       functionName: "stakeETH",
-      args: [BigInt(expiry), address],
+      args: [windowId, address],
     }) as Promise<bigint>,
     publicClient.readContract({
       address: CONTRACT_ADDRESS,
       abi: MATCHUP_ABI,
       functionName: "claimed",
-      args: [BigInt(expiry), address],
+      args: [windowId, address],
     }) as Promise<boolean>,
     publicClient.readContract({
       address: CONTRACT_ADDRESS,
       abi: MATCHUP_ABI,
       functionName: "claimable",
-      args: [BigInt(expiry), address],
+      args: [windowId, address],
     }) as Promise<bigint>,
   ]);
   return { stakeBTC, stakeETH, claimed, claimable };

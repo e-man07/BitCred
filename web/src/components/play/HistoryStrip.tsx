@@ -18,13 +18,13 @@ export function HistoryStrip({ history }: { history: HistoryEntry[] }) {
     <div className="flex gap-3 overflow-x-auto pb-2">
       {history.map((h) => {
         const isDraw = h.status === Status.DRAW;
-        const time = new Date(h.windowId * 1000).toLocaleTimeString([], {
+        const time = new Date(h.expiresAt * 1000).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         });
         return (
           <div
-            key={h.windowId}
+            key={h.windowId.toString()}
             className={clsx(
               "shrink-0 w-36 rounded-xl border p-3",
               isDraw ? "border-draw/30 bg-draw/5" : "border-border bg-surface/50"

@@ -15,11 +15,18 @@ const CONTRACT_ADDRESS = requireEnv("CONTRACT_ADDRESS") as `0x${string}`;
 const RPC_URL = requireEnv("RPC_URL");
 const INDEXER_URL = requireEnv("INDEXER_URL");
 const WS_RPC_URL = process.env.WS_RPC_URL ?? "";
-const CADENCE_SEC = Number(process.env.CADENCE_SEC ?? "300");
+
+// windowId = expiresAt * CADENCE_MODULUS + cadenceSec (see MatchupMarket.sol)
+// — must match the contract's on-chain derivation exactly.
+const CADENCE_MODULUS = 1_000_000n;
+const CADENCES_SEC: number[] = (process.env.CADENCES_SEC ?? "300")
+  .split(",")
+  .map((s) => Number(s.trim()))
+  .filter((n) => n > 0);
 
 const TICK_MS = 5_000;
 const MIN_OPEN_LEAD_SEC = 20; // don't bother opening a window with less runway than this
-const LOOKBACK_WINDOWS = 24; // how many past cadence boundaries to check for pending settlement
+const LOOKBACK_WINDOWS = 24; // how many past cadence boundaries to check for pending settlement, per cadence
 const GAS_LIMIT_OPEN = 3_000_000n;
 const GAS_LIMIT_SETTLE = 2_000_000n;
 const GAS_LIMIT_REFUND = 1_000_000n;
@@ -41,7 +48,7 @@ const chain = defineChain({
   rpcUrls: { default: { http: [RPC_URL] } },
 });
 
-const publicClient = createPublicClient({ chain, transport: http(RPC_URL) });
+const publicClient = createPublicClient({ chain, transport: http(RPC_URL, { batch: true }) });
 const walletClient = createWalletClient({ account, chain, transport: http(RPC_URL) });
 
 const exchange = new SomniaMarkets({
@@ -56,17 +63,17 @@ function nowSec(): number {
   return Math.floor(Date.now() / 1000);
 }
 
-function currentBoundary(): number {
-  return Math.ceil(nowSec() / CADENCE_SEC) * CADENCE_SEC;
+function currentBoundary(cadenceSec: number): number {
+  return Math.ceil(nowSec() / cadenceSec) * cadenceSec;
+}
+
+function windowIdOf(expiry: number, cadenceSec: number): bigint {
+  return BigInt(expiry) * CADENCE_MODULUS + BigInt(cadenceSec);
 }
 
 type ChainWindow = {
-  id: bigint;
-  opensAt: number;
-  locksAt: number;
   expiresAt: number;
   status: number; // 0 OPEN, 1 SETTLED, 2 DRAW
-  winner: number;
   potBTC: bigint;
   potETH: bigint;
   btcUp: boolean;
@@ -75,20 +82,16 @@ type ChainWindow = {
   ethMarketId: `0x${string}`;
 };
 
-async function readWindow(expiry: number): Promise<ChainWindow> {
+async function readWindow(windowId: bigint): Promise<ChainWindow> {
   const w = (await publicClient.readContract({
     address: CONTRACT_ADDRESS,
     abi: ABI,
     functionName: "getWindow",
-    args: [BigInt(expiry)],
+    args: [windowId],
   })) as any;
   return {
-    id: w.id,
-    opensAt: Number(w.opensAt),
-    locksAt: Number(w.locksAt),
     expiresAt: Number(w.expiresAt),
     status: w.status,
-    winner: w.winner,
     potBTC: w.potBTC,
     potETH: w.potETH,
     btcUp: w.btcUp,
@@ -115,44 +118,46 @@ async function getUpOutcome(marketId: string, label: string): Promise<boolean | 
   return m.winningOutcome === 0; // 0 = YES = "closes at or above opening price" = Up
 }
 
-async function maybeOpenNextWindow() {
-  const expiry = currentBoundary();
+async function maybeOpenNextWindow(cadenceSec: number) {
+  const expiry = currentBoundary(cadenceSec);
   if (expiry - nowSec() < MIN_OPEN_LEAD_SEC) return; // too close, wait for the following boundary next tick
 
-  const existing = await readWindow(expiry);
+  const windowId = windowIdOf(expiry, cadenceSec);
+  const existing = await readWindow(windowId);
   if (existing.expiresAt !== 0) return; // already open
 
   const [btcRows, ethRows] = await Promise.all([
-    dreamdex.listBinaryMarkets({ asset: "BTC", status: "Trading", intervalSec: CADENCE_SEC, limit: 10 }),
-    dreamdex.listBinaryMarkets({ asset: "ETH", status: "Trading", intervalSec: CADENCE_SEC, limit: 10 }),
+    dreamdex.listBinaryMarkets({ asset: "BTC", status: "Trading", intervalSec: cadenceSec, limit: 10 }),
+    dreamdex.listBinaryMarkets({ asset: "ETH", status: "Trading", intervalSec: cadenceSec, limit: 10 }),
   ]);
   const btc = btcRows.find((m) => m.mode === "reference" && Number(m.expiry) === expiry);
   const eth = ethRows.find((m) => m.mode === "reference" && Number(m.expiry) === expiry);
 
   if (!btc || !eth) {
-    log(`waiting for DreamDEX to list BTC/ETH ${CADENCE_SEC}s markets expiring at ${expiry}`);
+    log(`[${cadenceSec}s] waiting for DreamDEX to list BTC/ETH markets expiring at ${expiry}`);
     return;
   }
 
-  log(`opening window ${expiry} — btc=${btc.marketId} eth=${eth.marketId}`);
+  log(`[${cadenceSec}s] opening window ${windowId} (expiry ${expiry}) — btc=${btc.marketId} eth=${eth.marketId}`);
   const hash = await walletClient.writeContract({
     address: CONTRACT_ADDRESS,
     abi: ABI,
     functionName: "openWindow",
-    args: [BigInt(expiry), btc.marketId as `0x${string}`, eth.marketId as `0x${string}`],
+    args: [BigInt(expiry), cadenceSec, btc.marketId as `0x${string}`, eth.marketId as `0x${string}`],
     gas: GAS_LIMIT_OPEN,
   });
   await publicClient.waitForTransactionReceipt({ hash });
-  log(`  window ${expiry} opened (tx ${hash})`);
+  log(`  [${cadenceSec}s] window ${windowId} opened (tx ${hash})`);
 }
 
-async function trySettlePendingWindows() {
-  const boundary = currentBoundary();
+async function trySettlePendingWindows(cadenceSec: number) {
+  const boundary = currentBoundary(cadenceSec);
   for (let i = 1; i <= LOOKBACK_WINDOWS; i++) {
-    const expiry = boundary - CADENCE_SEC * i;
+    const expiry = boundary - cadenceSec * i;
     if (expiry <= 0) break;
+    const windowId = windowIdOf(expiry, cadenceSec);
 
-    const w = await readWindow(expiry);
+    const w = await readWindow(windowId);
     if (w.expiresAt === 0) continue; // never opened, nothing to settle
     if (w.status !== 0) continue; // already SETTLED or DRAW
     if (nowSec() < w.expiresAt) continue; // shouldn't happen given i>=1, but guard anyway
@@ -166,45 +171,45 @@ async function trySettlePendingWindows() {
     ]);
 
     if (btcUp === null || ethUp === null) {
-      log(`window ${expiry}: DreamDEX not resolved yet (btc=${btcUp} eth=${ethUp})`);
+      log(`[${cadenceSec}s] window ${windowId}: DreamDEX not resolved yet (btc=${btcUp} eth=${ethUp})`);
       if (nowSec() >= stuckDeadline) {
-        log(`window ${expiry}: approaching grace-period timeout, forcing refund`);
+        log(`[${cadenceSec}s] window ${windowId}: approaching grace-period timeout, forcing refund`);
         const hash = await walletClient.writeContract({
           address: CONTRACT_ADDRESS,
           abi: ABI,
           functionName: "refundStuckWindow",
-          args: [BigInt(expiry)],
+          args: [windowId],
           gas: GAS_LIMIT_REFUND,
         });
         await publicClient.waitForTransactionReceipt({ hash });
-        log(`  window ${expiry} force-refunded (tx ${hash})`);
+        log(`  [${cadenceSec}s] window ${windowId} force-refunded (tx ${hash})`);
       }
       continue;
     }
 
-    log(`window ${expiry}: settling btcUp=${btcUp} ethUp=${ethUp}`);
+    log(`[${cadenceSec}s] window ${windowId}: settling btcUp=${btcUp} ethUp=${ethUp}`);
     const hash = await walletClient.writeContract({
       address: CONTRACT_ADDRESS,
       abi: ABI,
       functionName: "settle",
-      args: [BigInt(expiry), btcUp, ethUp],
+      args: [windowId, btcUp, ethUp],
       gas: GAS_LIMIT_SETTLE,
     });
     await publicClient.waitForTransactionReceipt({ hash });
-    log(`  window ${expiry} settled (tx ${hash})`);
+    log(`  [${cadenceSec}s] window ${windowId} settled (tx ${hash})`);
   }
 }
 
-async function tick() {
+async function tick(cadenceSec: number) {
   try {
-    await maybeOpenNextWindow();
+    await maybeOpenNextWindow(cadenceSec);
   } catch (err) {
-    log("openWindow tick error:", (err as Error).message);
+    log(`[${cadenceSec}s] openWindow tick error:`, (err as Error).message);
   }
   try {
-    await trySettlePendingWindows();
+    await trySettlePendingWindows(cadenceSec);
   } catch (err) {
-    log("settle tick error:", (err as Error).message);
+    log(`[${cadenceSec}s] settle tick error:`, (err as Error).message);
   }
 }
 
@@ -212,11 +217,15 @@ async function main() {
   log("resolver starting");
   log("  contract:", CONTRACT_ADDRESS);
   log("  operator:", account.address);
-  log("  cadence:", CADENCE_SEC, "seconds");
+  log("  cadences:", CADENCES_SEC.join(", "), "seconds");
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    await tick();
+    // Cadences run sequentially per tick (not in parallel) so writes from
+    // this single nonce-tracked account never race each other.
+    for (const cadenceSec of CADENCES_SEC) {
+      await tick(cadenceSec);
+    }
     await new Promise((r) => setTimeout(r, TICK_MS));
   }
 }

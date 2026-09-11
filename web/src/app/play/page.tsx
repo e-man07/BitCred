@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BtcIcon, EthIcon } from "@/components/AssetIcon";
 import { WalletBadge } from "@/components/play/WalletBadge";
 import { MatchHeader, Phase } from "@/components/play/MatchHeader";
+import { CadenceTabs } from "@/components/play/CadenceTabs";
 import { RaceView } from "@/components/play/RaceView";
 import { PotSplitBar } from "@/components/play/PotSplitBar";
 import { PickPanel } from "@/components/play/PickPanel";
@@ -13,7 +14,7 @@ import { HistoryStrip } from "@/components/play/HistoryStrip";
 import { useWindow } from "@/hooks/useWindow";
 import { usePrices } from "@/hooks/usePrices";
 import { useWallet } from "@/lib/wallet";
-import { readStakes } from "@/lib/chain";
+import { CADENCES, readStakes } from "@/lib/chain";
 
 function useNow() {
   const [now, setNow] = useState(() => Date.now());
@@ -25,7 +26,8 @@ function useNow() {
 }
 
 export default function PlayPage() {
-  const { expiry, window: win, prevWindow, history, cadenceSec } = useWindow();
+  const [cadenceSec, setCadenceSec] = useState(CADENCES[0]?.sec ?? 300);
+  const { expiry, window: win, prevWindow, history } = useWindow(cadenceSec);
   const { address } = useWallet();
   const now = useNow();
   const nowSec = Math.floor(now / 1000);
@@ -48,13 +50,13 @@ export default function PlayPage() {
       return;
     }
     let cancelled = false;
-    readStakes(win.expiresAt, address).then((s) => {
+    readStakes(win.id, address).then((s) => {
       if (!cancelled) setUserStake({ btc: s.stakeBTC, eth: s.stakeETH });
     });
     return () => {
       cancelled = true;
     };
-  }, [address, win?.expiresAt, refreshTick]);
+  }, [address, win?.id, refreshTick]);
 
   let phase: Phase = "waiting";
   let secondsLeft = 0;
@@ -108,6 +110,10 @@ export default function PlayPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-20">
+        <div className="flex justify-center mb-6">
+          <CadenceTabs value={cadenceSec} onChange={setCadenceSec} />
+        </div>
+
         <SettlementOverlay window={prevWindow} />
 
         <MatchHeader
@@ -128,7 +134,7 @@ export default function PlayPage() {
         <div className="mt-6">
           {win ? (
             <PickPanel
-              windowId={win.expiresAt}
+              windowId={win.id}
               locked={phase !== "open"}
               userStakeBTC={userStake.btc}
               userStakeETH={userStake.eth}

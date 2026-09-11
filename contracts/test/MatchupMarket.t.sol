@@ -15,7 +15,9 @@ contract MatchupMarketTest is Test {
 
     bytes32 constant BTC_MKT = keccak256("btc-market");
     bytes32 constant ETH_MKT = keccak256("eth-market");
+    uint32 constant CADENCE = 300;
 
+    uint256 expiresAt;
     uint256 windowId;
 
     function setUp() public {
@@ -24,8 +26,8 @@ contract MatchupMarketTest is Test {
         vm.deal(bob, 100 ether);
         vm.deal(carol, 100 ether);
 
-        windowId = block.timestamp + 5 minutes;
-        market.openWindow(windowId, BTC_MKT, ETH_MKT);
+        expiresAt = block.timestamp + 5 minutes;
+        windowId = market.openWindow(expiresAt, CADENCE, BTC_MKT, ETH_MKT);
     }
 
     function _pick(address user, MatchupMarket.Side side, uint256 amount) internal {
@@ -34,7 +36,7 @@ contract MatchupMarketTest is Test {
     }
 
     function _warpToExpiry() internal {
-        vm.warp(windowId);
+        vm.warp(expiresAt);
     }
 
     function _settle(bool btcUp, bool ethUp) internal {
@@ -44,20 +46,41 @@ contract MatchupMarketTest is Test {
 
     // ---------- openWindow ----------
 
+    function test_openWindow_derivesWindowIdFromExpiryAndCadence() public view {
+        assertEq(windowId, expiresAt * market.CADENCE_MODULUS() + CADENCE);
+    }
+
     function test_openWindow_rejectsPastExpiry() public {
         vm.expectRevert(bytes("ALREADY_EXPIRED"));
-        market.openWindow(block.timestamp - 1, BTC_MKT, ETH_MKT);
+        market.openWindow(block.timestamp - 1, CADENCE, BTC_MKT, ETH_MKT);
     }
 
     function test_openWindow_rejectsDuplicate() public {
         vm.expectRevert(bytes("WINDOW_EXISTS"));
-        market.openWindow(windowId, BTC_MKT, ETH_MKT);
+        market.openWindow(expiresAt, CADENCE, BTC_MKT, ETH_MKT);
+    }
+
+    function test_openWindow_sameExpiryDifferentCadenceDoesNotCollide() public {
+        uint256 otherWindowId = market.openWindow(expiresAt, 900, BTC_MKT, ETH_MKT);
+        assertTrue(otherWindowId != windowId);
     }
 
     function test_openWindow_onlyOperator() public {
         vm.prank(alice);
         vm.expectRevert(bytes("NOT_OPERATOR"));
-        market.openWindow(block.timestamp + 10 minutes, BTC_MKT, ETH_MKT);
+        market.openWindow(block.timestamp + 10 minutes, CADENCE, BTC_MKT, ETH_MKT);
+    }
+
+    function test_openWindow_rejectsBadCadence() public {
+        vm.expectRevert(bytes("BAD_CADENCE"));
+        market.openWindow(block.timestamp + 10 minutes, 0, BTC_MKT, ETH_MKT);
+
+        // precompute — expectRevert only intercepts the very next call frame,
+        // and evaluating market.CADENCE_MODULUS() as an inline argument would
+        // itself be that next call.
+        uint32 tooLarge = uint32(market.CADENCE_MODULUS());
+        vm.expectRevert(bytes("BAD_CADENCE"));
+        market.openWindow(block.timestamp + 10 minutes, tooLarge, BTC_MKT, ETH_MKT);
     }
 
     // ---------- pick ----------
@@ -76,7 +99,7 @@ contract MatchupMarketTest is Test {
     }
 
     function test_pick_rejectsAfterLock() public {
-        vm.warp(windowId - market.LOCK_BUFFER());
+        vm.warp(expiresAt - market.LOCK_BUFFER());
         vm.prank(alice);
         vm.expectRevert(bytes("PICKS_LOCKED"));
         market.pick{value: 1 ether}(windowId, MatchupMarket.Side.BTC);
@@ -253,7 +276,7 @@ contract MatchupMarketTest is Test {
     function test_refundStuckWindow_afterGrace_anyoneCanTrigger() public {
         _pick(alice, MatchupMarket.Side.BTC, 10 ether);
         _pick(bob, MatchupMarket.Side.ETH, 10 ether);
-        vm.warp(windowId + market.GRACE_PERIOD());
+        vm.warp(expiresAt + market.GRACE_PERIOD());
 
         vm.prank(carol); // anyone, not just resolver/owner
         market.refundStuckWindow(windowId);
@@ -270,7 +293,7 @@ contract MatchupMarketTest is Test {
     function test_refundStuckWindow_afterSettleReverts() public {
         _warpToExpiry();
         _settle(true, false);
-        vm.warp(windowId + market.GRACE_PERIOD());
+        vm.warp(expiresAt + market.GRACE_PERIOD());
         vm.expectRevert(bytes("ALREADY_RESOLVED"));
         market.refundStuckWindow(windowId);
     }

@@ -33,6 +33,9 @@ Show the BTC-vs-ETH hero graphic / pot-split bar filling on both sides.
 
 ## 1:00–2:00 — Live run (this is the section that matters most)
 
+0. Optional: point out the 5m / 15m / 1h tabs — all three run for real off
+   the same DreamDEX feed, not just the one shown. Stay on 5m for the rest
+   of the run (best odds of a decisive result in the recording window).
 1. Show the countdown, live prices moving, pot-split bar.
 2. Tap "Get test STT" — instant, no popup.
 3. Tap a side (BTC or ETH) — instant confirmation, no wallet popup, no gas
@@ -78,7 +81,7 @@ having both in your back pocket while editing is strictly better.
 ## Assets already in place
 
 - Live app: https://web-nine-puce-31.vercel.app
-- Contract: `0x94bf73f7C4f30A6e3E4456C3500D20d6b791eB84` on Shannon
-  (`https://shannon-explorer.somnia.network/address/0x94bf...eB84`)
+- Contract: `0x219eE4A6A83E7D9238e43e568720da2b5e5eC1c2` on Shannon
+  (`https://shannon-explorer.somnia.network/address/0x219eE4A6A83E7D9238e43e568720da2b5e5eC1c2`)
 - Resolver log for on-camera proof of automatic settlement:
   `resolver/resolver.log` (or watch it live: `tail -f resolver/resolver.log`)

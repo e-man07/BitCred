@@ -26,12 +26,13 @@ function Row({ entry, onClaimed }: { entry: ProfileEntry; onClaimed: () => void 
   const [claiming, setClaiming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const time = new Date(entry.windowId * 1000).toLocaleString([], {
+  const time = new Date(entry.expiresAt * 1000).toLocaleString([], {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
+  const cadenceLabel = entry.cadenceSec % 3600 === 0 ? `${entry.cadenceSec / 3600}h` : `${entry.cadenceSec / 60}m`;
 
   async function handleClaim() {
     setClaiming(true);
@@ -55,6 +56,8 @@ function Row({ entry, onClaimed }: { entry: ProfileEntry; onClaimed: () => void 
           <span className="font-medium">{entry.side === Side.BTC ? "BTC" : "ETH"}</span>
           <span className="text-text-faint">·</span>
           <span className="text-text-faint tabular">{time}</span>
+          <span className="text-text-faint">·</span>
+          <span className="text-text-faint font-mono">{cadenceLabel}</span>
         </div>
         <div className="text-xs text-text-dim font-mono tabular mt-0.5">
           {formatSTT(entry.staked, 4)} STT staked
@@ -115,7 +118,7 @@ export function ProfileHistory({
   return (
     <div className={clsx("flex flex-col gap-2", loading && "opacity-70")}>
       {entries.map((e) => (
-        <Row key={e.windowId} entry={e} onClaimed={onClaimed} />
+        <Row key={e.windowId.toString()} entry={e} onClaimed={onClaimed} />
       ))}
     </div>
   );

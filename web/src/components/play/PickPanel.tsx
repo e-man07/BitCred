@@ -16,7 +16,7 @@ export function PickPanel({
   userStakeETH,
   onPicked,
 }: {
-  windowId: number;
+  windowId: bigint;
   locked: boolean;
   userStakeBTC: bigint;
   userStakeETH: bigint;

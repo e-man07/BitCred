@@ -1,14 +1,14 @@
 # Matchup — BTC vs ETH, settled by DreamDEX Event Contracts
 
 A head-to-head prediction game built for the Somnia × DreamDEX Event Contracts
-Hackathon. One five-minute window, pick BTC or ETH, winner takes both pots.
-Settlement comes **entirely** from DreamDEX Event Contract resolutions —
+Hackathon. Pick a cadence (5m / 15m / 1h), pick BTC or ETH, winner takes both
+pots. Settlement comes **entirely** from DreamDEX Event Contract resolutions —
 remove DreamDEX and the product cannot resolve. That is the integration
 story.
 
 **Repo:** https://github.com/e-man07/matchup-btc-eth
 **Live app:** https://web-nine-puce-31.vercel.app
-**Live testnet contract:** [`0x94bf73f7C4f30A6e3E4456C3500D20d6b791eB84`](https://shannon-explorer.somnia.network/address/0x94bf73f7C4f30A6e3E4456C3500D20d6b791eB84) on Somnia Shannon (chain `50312`)
+**Live testnet contract:** [`0x219eE4A6A83E7D9238e43e568720da2b5e5eC1c2`](https://shannon-explorer.somnia.network/address/0x219eE4A6A83E7D9238e43e568720da2b5e5eC1c2) on Somnia Shannon (chain `50312`)
 
 ---
 
@@ -51,9 +51,12 @@ window doesn't fix it, and no third, less-correlated asset exists on
 DreamDEX to race against (only BTC and ETH have Event Contracts). So the
 draw isn't an edge case in this product, it's the main event: the UI treats
 it as a first-class, equally-produced outcome ("No Contest — Dead Heat"),
-not an error state. We bound to the **5-minute** cadence specifically
-because it gives the most attempts per hour to still catch a decisive
-result live.
+not an error state.
+
+The app runs **5m / 15m / 1h concurrently**, picked with a tab on `/play` —
+5-minute is the default because it gives the most attempts per hour to catch
+a decisive (non-draw) result live, but all three cadences settle for real
+off the same DreamDEX feed.
 
 ---
 
@@ -139,7 +142,7 @@ cp .env.example .env.local   # fill in NEXT_PUBLIC_CONTRACT_ADDRESS + FAUCET_PRI
 npm run dev
 ```
 
-Open `http://localhost:3000`. A burner wallet is generated in the browser on
+Open the printed local URL. A burner wallet is generated in the browser on
 first load (no extension, no signup) — use the "Get test STT" button to fund
 it from the faucet endpoint.
 
@@ -147,9 +150,13 @@ it from the faucet endpoint.
 
 ## Contract design notes
 
-- `windowId` **is** the DreamDEX window's shared expiry timestamp — BTC and
-  ETH windows share a clock on DreamDEX (verified empirically), so the
-  expiry is already a natural, collision-free, on-chain-auditable key.
+- `windowId` is derived on-chain as `expiresAt * 1_000_000 + cadenceSec` —
+  BTC and ETH windows share a clock on DreamDEX (verified empirically), so
+  expiry is a natural key, but DreamDEX runs several cadences concurrently
+  per asset and a 15m expiry is also a 5m expiry, so cadence has to be
+  folded in or two cadences' windows collide. Encoding rather than hashing
+  keeps the id human-decodable: `windowId / 1_000_000` is the expiry,
+  `windowId % 1_000_000` is the cadence.
 - `openWindow` / `settle` are resolver/owner-gated, not fully permissionless
   — otherwise an attacker could front-run a real window with garbage
   DreamDEX market ids and grief the game. `pick` and `claim` stay open to

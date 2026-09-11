@@ -12,8 +12,8 @@ type WalletContextValue = {
   balance: bigint;
   ready: boolean;
   refreshBalance: () => Promise<void>;
-  pick: (windowId: number, side: Side, amountEth: string) => Promise<`0x${string}`>;
-  claim: (windowId: number) => Promise<`0x${string}`>;
+  pick: (windowId: bigint, side: Side, amountEth: string) => Promise<`0x${string}`>;
+  claim: (windowId: bigint) => Promise<`0x${string}`>;
   requestFaucet: () => Promise<void>;
   faucetPending: boolean;
 };
@@ -59,13 +59,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }, [address, refreshBalance]);
 
   const pick = useCallback(
-    async (windowId: number, side: Side, amountEth: string) => {
+    async (windowId: bigint, side: Side, amountEth: string) => {
       if (!walletClient || !walletClient.account) throw new Error("wallet not ready");
       const hash = await walletClient.writeContract({
         address: CONTRACT_ADDRESS,
         abi: MATCHUP_ABI,
         functionName: "pick",
-        args: [BigInt(windowId), side],
+        args: [windowId, side],
         value: BigInt(Math.round(Number(amountEth) * 1e18)),
         account: walletClient.account,
         chain: shannon,
@@ -78,13 +78,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   );
 
   const claim = useCallback(
-    async (windowId: number) => {
+    async (windowId: bigint) => {
       if (!walletClient || !walletClient.account) throw new Error("wallet not ready");
       const hash = await walletClient.writeContract({
         address: CONTRACT_ADDRESS,
         abi: MATCHUP_ABI,
         functionName: "claim",
-        args: [BigInt(windowId)],
+        args: [windowId],
         account: walletClient.account,
         chain: shannon,
       });
