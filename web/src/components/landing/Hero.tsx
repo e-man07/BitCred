@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { BtcIcon, EthIcon } from "@/components/AssetIcon";
-import { LightningClash } from "@/components/landing/LightningClash";
+import {
+  LightningClash,
+  CLASH_CYCLE_SECONDS,
+  CLASH_REST_SECONDS,
+} from "@/components/landing/LightningClash";
 
 export function Hero() {
   return (
@@ -54,12 +58,20 @@ export function Hero() {
             <BtcIcon className="relative w-24 h-24 sm:w-32 sm:h-32" />
           </motion.div>
 
-          <span
+          <motion.span
             className="relative z-10 font-display text-3xl sm:text-5xl text-text select-none shrink-0"
             style={{ textShadow: "0 0 30px rgba(243,236,221,0.25)" }}
+            animate={{ scale: [1, 1.28, 0.96, 1] }}
+            transition={{
+              duration: CLASH_CYCLE_SECONDS,
+              repeat: Infinity,
+              repeatDelay: CLASH_REST_SECONDS,
+              times: [0, 0.22, 0.32, 0.5],
+              ease: "easeOut",
+            }}
           >
             VS
-          </span>
+          </motion.span>
 
           <motion.div
             animate={{ y: [0, 8, 0] }}
