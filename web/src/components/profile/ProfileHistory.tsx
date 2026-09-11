@@ -48,44 +48,48 @@ function Row({ entry, onClaimed }: { entry: ProfileEntry; onClaimed: () => void 
   }
 
   return (
-    <div className="flex items-center gap-4 border border-border bg-surface p-4">
-      {entry.side === Side.BTC ? <BtcIcon className="w-8 h-8 shrink-0" /> : <EthIcon className="w-8 h-8 shrink-0" />}
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border border-border bg-surface p-4">
+      <div className="flex items-center gap-4 min-w-0 flex-1">
+        {entry.side === Side.BTC ? <BtcIcon className="w-8 h-8 shrink-0" /> : <EthIcon className="w-8 h-8 shrink-0" />}
 
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-medium">{entry.side === Side.BTC ? "BTC" : "ETH"}</span>
-          <span className="text-text-faint">·</span>
-          <span className="text-text-faint tabular">{time}</span>
-          <span className="text-text-faint">·</span>
-          <span className="text-text-faint font-mono">{cadenceLabel}</span>
-        </div>
-        <div className="text-xs text-text-dim font-mono tabular mt-0.5">
-          {formatSTT(entry.staked, 4)} STT staked
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-sm flex-wrap">
+            <span className="font-medium">{entry.side === Side.BTC ? "BTC" : "ETH"}</span>
+            <span className="text-text-faint">·</span>
+            <span className="text-text-faint tabular whitespace-nowrap">{time}</span>
+            <span className="text-text-faint">·</span>
+            <span className="text-text-faint font-mono">{cadenceLabel}</span>
+          </div>
+          <div className="text-xs text-text-dim font-mono tabular mt-0.5">
+            {formatSTT(entry.staked, 4)} STT staked
+          </div>
         </div>
       </div>
 
-      <span
-        className="text-xs font-semibold px-2.5 py-1 shrink-0 border"
-        style={{ color: OUTCOME_COLOR[entry.outcome], borderColor: OUTCOME_COLOR[entry.outcome] }}
-      >
-        {OUTCOME_LABEL[entry.outcome]}
-      </span>
-
-      {entry.claimable > 0n && !entry.claimed ? (
-        <button
-          onClick={handleClaim}
-          disabled={claiming}
-          className="shrink-0 bg-text text-bg text-xs font-semibold px-3 py-2 disabled:opacity-50"
+      <div className="flex items-center gap-2 shrink-0 sm:ml-auto">
+        <span
+          className="text-xs font-semibold px-2.5 py-1 shrink-0 border"
+          style={{ color: OUTCOME_COLOR[entry.outcome], borderColor: OUTCOME_COLOR[entry.outcome] }}
         >
-          {claiming ? "claiming…" : `Claim ${formatSTT(entry.claimable, 3)}`}
-        </button>
-      ) : entry.claimed ? (
-        <span className="shrink-0 text-xs text-text-faint">claimed ✓</span>
-      ) : entry.outcome === "pending" ? (
-        <span className="shrink-0 text-xs text-text-faint">awaiting settlement</span>
-      ) : null}
+          {OUTCOME_LABEL[entry.outcome]}
+        </span>
 
-      {error && <span className="text-xs text-lose">{error}</span>}
+        {entry.claimable > 0n && !entry.claimed ? (
+          <button
+            onClick={handleClaim}
+            disabled={claiming}
+            className="shrink-0 bg-text text-bg text-xs font-semibold px-3 py-2 disabled:opacity-50"
+          >
+            {claiming ? "claiming…" : `Claim ${formatSTT(entry.claimable, 3)}`}
+          </button>
+        ) : entry.claimed ? (
+          <span className="shrink-0 text-xs text-text-faint">claimed ✓</span>
+        ) : entry.outcome === "pending" ? (
+          <span className="shrink-0 text-xs text-text-faint">awaiting settlement</span>
+        ) : null}
+      </div>
+
+      {error && <span className="text-xs text-lose w-full">{error}</span>}
     </div>
   );
 }
